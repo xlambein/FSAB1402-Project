@@ -16,7 +16,7 @@ local Mix Interprete Projet in
     % Mix prends une musique et doit retourner un vecteur audio.
     fun {Mix Interprete Music}
         % Test avec un seul échantillon
-        local N Freq Vectorise EchantillonToAudio VoixToAudio in
+        local N Freq Vectorise EchantillonToAudio VoixToAudio MorceauToAudio MusiqueToAudio in
             fun {Vectorise Freq I N End}
                 local Tau=6.283185307 in
                     if I < N-1 then
@@ -50,7 +50,152 @@ local Mix Interprete Projet in
                 end
             end
             
-            {VoixToAudio Music nil}
+            fun {FiltreRenverser VA Acc}
+                case VA
+                of H|T then
+                    {FiltreRenverser T H|Acc}
+                [] nil then
+                    Acc
+                end
+            end
+            
+            fun {FiltreRepetitionNombre Nombre VA FullVA}
+                case VA
+                of H|T then
+                    H|{FiltreRepetitionNombre Nombre T FullVA}
+                [] nil then
+                    if Nombre > 0 then
+                        {FiltreRepetitionNombre Nombre-1 FullVA FullVA}
+                    else
+                        nil
+                    end
+                end
+            end
+            
+            fun {FiltreRepetitionNbEch NbEch VA FullVA}
+                if NbEch > 0 then
+                    case VA
+                    of H|T then
+                        H|{FiltreRepetitionNombre NbEch-1 T FullVA}
+                    [] nil then
+                        {FiltreRepetitionNombre NbEch-1 FullVA FullVA}
+                    end
+                else
+                    nil
+                end
+            end
+            
+            fun {FiltreClip Bas Haut VA}
+                case VA
+                of H|T then
+                    local R in
+                        if H > Haut then
+                            R = Haut
+                        else if H < Bas then
+                            R = Bas
+                        else
+                            R = H
+                        end
+                        R|{FiltreClip Bas Haut T}
+                    end
+                [] nil then
+                    nil
+                end
+            end
+            
+            fun {EchoIntensiteTotale Decadence Repetition A1 A2}
+                if Repetition == 0 then
+                    A1
+                else
+                    local R=A2*Decadence in
+                        {EchoIntensiteTotale Decadence Repetition-1 A1+R R}
+                    end
+                end
+            end
+            
+            fun {FiltreFondueOuverture Duree VA Pos}
+                case VA
+                of H|T then
+                    if Pos < Duree then
+                        H*(Pos/Duree)|{FiltreFondueOuverture Duree T Pos+(1.0/Project.hz)}
+                    else
+                        H|T
+                    end
+                [] nil then
+                    nil
+                end
+            end
+            
+            fun {FiltreFondueOuverture Duree VA Pos}
+                case VA
+                of H|T then
+                    local NextPos Rest in
+                        Pos = NextPos+(1.0/Project.hz)
+                        if Pos < Duree then
+                            H*(Pos/Duree)|Rest
+                        else
+                            H
+                        end
+                        % This is weird but it's necessary for tail-recursivity
+                        Rest = {FiltreFondueOuverture Duree T NextPos}
+                    end
+                [] nil then
+                    Pos = 0.0
+                    nil
+                end
+            end
+            
+            fun {MorceauToAudio Morceau}
+                case Morceau
+                of voix(V) then
+                    {VoixToAudio V}
+                [] partition(P) then
+                    {VoixToAudio voix({Interprete P})}
+                [] wave(F) then
+                    {Project.readFile F}
+                %[] merge(M) then
+                %    
+                
+                %filtres
+                [] renverser(M) then
+                    {FiltreRenverser {MorceauToAudio M} nil} 
+                [] repetition(nombre:N M) then
+                    local Audio={MorceauToAudio M} in
+                        {FiltreRepetitionNombre N Audio Audio}
+                    end
+                [] repetition(duree:D M) then
+                    local Audio={MorceauToAudio M} in
+                        {FiltreRepetitionNbEch {FloatToInt D*{IntToFloat Projet.hz}} Audio Audio}
+                    end
+                [] clip(bas:B haut:H M) then
+                    {FiltreClip B H {MorceauToAudio M}}
+                %[] echo(delai:D M) then
+                %    {MorceauToAudio merge([0.5#M 0.5#[voix([silence(duree:D)]) M]])}
+                %[] echo(delai:D decadence:Dc M) then
+                %[] echo(delai:D decadence:Dc repetition:R M) then
+                %    local IntensiteTotale={EchoIntensiteTotale D R 1.0 1.0} in
+                %    end
+                [] fondue(ouverture:O fermeture:F M) then
+                    {FiltreFondueFermeture F
+                        {FiltreFondueOuverture O {MorceauToAudio M} 0.0}
+                        _}
+                %[] fondue_enchaine(duree:D M1 M2) then
+                %[] couper(debut:D fin:F M) then
+                end
+            end
+            
+            fun {MusiqueToAudio Musique End}
+                case Musique
+                of H|T then
+                    {MorceauToAudio H}|{MusiqueToAudio T End}
+                [] nil then
+                    End
+                else
+                    {MorceauToAudio Musique}|End
+                end 
+            end
+            
+            {MusicToAudio Music nil}
         end
     end
 
@@ -234,7 +379,7 @@ local Mix Interprete Projet in
         % Si votre code devait ne pas passer nos tests, cet exemple serait le
         % seul qui ateste de la validité de votre implémentation.
         %{Browse {Projet.run Mix Interprete Music 'out.wav'}}
-        {Browse {Projet.run Mix Interprete {Interprete Music} 'out.wav'}}
+        {Browse {Projet.run Mix Interprete partition(Music) 'out.wav'}}
     end
 end
 
