@@ -117,8 +117,10 @@ in
                 silence(duree:Echantillon.duree)
             end
         else
+            Hauteur = {NoteHauteur {ToNote Note}}
+        in
             fun {$ Echantillon}
-                echantillon(hauteur:{NoteHauteur {ToNote Note}}
+                echantillon(hauteur:Hauteur
                             duree:Echantillon.duree
                             instrument:none)
             end
