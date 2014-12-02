@@ -25,8 +25,8 @@ local Mix Interprete Projet in
         %
         % Si votre code devait ne pas passer nos tests, cet exemple serait le
         % seul qui ateste de la validité de votre implémentation.
-        %{Browse {Projet.run Mix Interprete Music 'out.wav'}}
         {Browse {Projet.run Mix Interprete partition(Music) 'out.wav'}}
+        %{Browse {Interprete bourdon(note:a muet(b))}}
     end
 end
 
