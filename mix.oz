@@ -1,5 +1,5 @@
 % Mix prends une musique et doit retourner un vecteur audio.
-fun {Mix Interprete Music} Vectorise EchantillonToAudio VoixToAudio FiltreRenverser FiltreRepetitionNombre FiltreRepetitionNbEch FiltreClip EchoIntensiteTotale FiltreFondueOuverture FiltreFondueFermeture MorceauToAudio MusiqueToAudio in
+fun {Mix Interprete Music}
     fun {Vectorise Freq I N End}
         local Tau=6.283185307 X X0 F in
             if I < N then
@@ -191,6 +191,8 @@ fun {Mix Interprete Music} Vectorise EchantillonToAudio VoixToAudio FiltreRenver
             {MorceauToAudio Musique End}
         end
     end
+    
+    in
     
     {MusiqueToAudio Music nil}
 end
