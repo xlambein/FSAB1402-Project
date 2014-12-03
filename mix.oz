@@ -25,7 +25,8 @@ fun {Mix Interprete Music}
     end
     
     fun {EchantillonToAudio Echantillon End}
-        local N Freq in
+        local Freq in
+            {Browse Echantillon}
             case Echantillon
             of silence(duree:D) then
                 Freq = 0
@@ -104,11 +105,18 @@ fun {Mix Interprete Music}
         end
     end
     
-    fun {FiltreEcho Delai Decadence Repetition VA End}
-        IntensiteTotale = (1.0 - {Pow Decadence {IntToFloat Repetition+1.0}}) / (1.0 - Decadence)
+    fun {Echo Delai Decadence Repetition M End}
+        IntensiteTotale = (1.0 - {Pow Decadence {IntToFloat Repetition}+1.0}) / (1.0 - Decadence)
+        fun {ToMerge Decalage Intensite RepetIndex}
+            if RepetIndex == Repetition then
+                nil
+            else
+                (Intensite#[voix(silence(duree:Decalage)) M])|{ToMerge Decalage+Delai Intensite*Decadence RepetIndex+1}
+            end
+        end
     in
-        %{FiltreMerge
-        VA|End
+        {Browse {ToMerge 0.0 1.0/IntensiteTotale 0}}
+        {Merge {ToMerge 0.0 1.0/IntensiteTotale 0} End}
     end
     
     fun {FiltreFondueOuverture Duree VA Pos End}
@@ -164,14 +172,14 @@ fun {Mix Interprete Music}
         end
     end
     
-    fun {MergeWith I VA1 VA2 End}
+    fun {FiltreMergeTwo I1 VA1 I2 VA2 End}
         case VA1#VA2
         of (H1|T1)#(H2|T2) then
-            (I*H1 + H2)|{MergeWith I T1 T2 End}
+            (I1*H1 + I2*H2)|{FiltreMergeTwo I1 T1 I2 T2 End}
         [] (H1|T1)#nil then
-            (I*H1)|{MergeWith I T1 nil End}
+            (I1*H1)|{FiltreMergeTwo I1 T1 I2 nil End}
         [] nil#(H2|T2) then
-            H2|{MergeWith I nil T2 End}
+            (I2*H2)|{FiltreMergeTwo I1 nil I2 T2 End}
         [] nil#nil then
             End
         end
@@ -180,7 +188,7 @@ fun {Mix Interprete Music}
     fun {Merge List End}
         case List
         of (I#M)|T then
-            {MergeWith I {MorceauToAudio M nil} {Merge T nil} End}
+            {FiltreMergeTwo I {MusiqueToAudio M nil} 1.0 {Merge T nil} End}
         else
             nil
         end
@@ -197,25 +205,25 @@ fun {Mix Interprete Music}
             {Projet.readFile F}|End
         [] merge(L) then
             {Merge L End}
+        [] echo(delai:D M) then
+            {Echo D 1.0 1 M End}
+        [] echo(delai:D decadence:Dc M) then
+            {Echo D Dc 2 M End}
+        [] echo(delai:D decadence:Dc repetition:R M) then
+            {Echo D Dc R M End}
         
         %filtres
         [] renverser(M) then
-            {FiltreRenverser {MorceauToAudio M nil} End}
+            {FiltreRenverser {MusiqueToAudio M nil} End}
         [] repetition(nombre:N M) then
-            {FiltreRepetitionNombre N nil {MorceauToAudio M nil} End}
+            {FiltreRepetitionNombre N nil {MusiqueToAudio M nil} End}
         [] repetition(duree:D M) then
             {FiltreRepetitionNbEch {DureeToNbEch D} nil {MorceauToAudio M nil} End}
         [] clip(bas:B haut:H M) then
-            {FiltreClip B H {MorceauToAudio M nil} End}
-        [] echo(delai:D M) then
-            {FiltreEcho D 1.0 1 {MorceauToAudio M nil} End}
-        [] echo(delai:D decadence:Dc M) then
-            {FiltreEcho D Dc 1 {MorceauToAudio M nil} End}
-        [] echo(delai:D decadence:Dc repetition:R M) then
-            {FiltreEcho D Dc R {MorceauToAudio M nil} End}
+            {FiltreClip B H {MusiqueToAudio M nil} End}
         [] fondue(ouverture:O fermeture:F M) then
             {FiltreFondueFermeture F
-            {FiltreFondueOuverture O {MorceauToAudio M nil} 0.0 End}
+            {FiltreFondueOuverture O {MusiqueToAudio M nil} 0.0 End}
             _ End}
         %[] fondue_enchaine(duree:D M1 M2) then
         [] couper(debut:D fin:F M) then

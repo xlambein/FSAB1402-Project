@@ -27,9 +27,12 @@ local Mix Interprete Projet in
         % Si votre code devait ne pas passer nos tests, cet exemple serait le
         % seul qui ateste de la validité de votre implémentation.
         %{Browse {Projet.run Mix Interprete partition(Music) 'out.wav'}}
+        %{Browse {Projet.run Mix Interprete partition([silence a]) 'out.wav'}}
         %{Browse {Interprete bourdon(note:a muet(b))}}
         %{Browse {Projet.run Mix Interprete repetition(nombre:3 partition([a b])) 'out.wav'}}
-        {Browse {Projet.run Mix Interprete repetition(duree:5.0 partition([a b])) 'out.wav'}}
+        %{Browse {Projet.run Mix Interprete repetition(duree:5.0 partition([a b])) 'out.wav'}}
+        %{Browse {Projet.run Mix Interprete merge([0.5#partition(e) 0.5#partition(a)]) 'out.wav'}}
+        {Browse {Projet.run Mix Interprete echo(delai:1.1 decadence:0.5 repetition:3 partition(a)) 'out.wav'}}
     end
 end
 
