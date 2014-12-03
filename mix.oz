@@ -119,11 +119,12 @@ fun {Mix Interprete Music}
         {Merge {ToMerge 0.0 1.0/IntensiteTotale 0} End}
     end
     
-    fun {FiltreFondueOuverture Duree VA Pos End}
+    fun {FiltreFondueOuverture NbEch VA Pos End}
         case VA
         of H|T then
-            if Pos < Duree then
-                H*(Pos/Duree)|{FiltreFondueOuverture Duree T Pos+(1.0/Projet.hz) End}
+            if Pos < NbEch then
+                H*({IntToFloat Pos}/{IntToFloat NbEch})
+                |{FiltreFondueOuverture NbEch T Pos+1 End}
             else
                 H|T
             end
@@ -132,21 +133,21 @@ fun {Mix Interprete Music}
         end
     end
     
-    fun {FiltreFondueFermeture Duree VA Pos End}
+    fun {FiltreFondueFermeture NbEch VA Pos End}
         case VA
         of H|T then
             local NextPos Rest in
-                Rest = {FiltreFondueFermeture Duree T NextPos End}
-                Pos = NextPos+(1.0/Projet.hz)
+                Rest = {FiltreFondueFermeture NbEch T NextPos End}
+                Pos = NextPos+1
 
                 if Pos < Duree then
-                    H*(Pos/Duree)|Rest
+                    H*({IntToFloat Pos}/{IntToFloat NbEch})|Rest
                 else
                     H|Rest
                 end
             end
         [] nil then
-            Pos = 0.0
+            Pos = 0
             End
         end
     end
@@ -223,7 +224,7 @@ fun {Mix Interprete Music}
             {FiltreClip B H {MusiqueToAudio M nil} End}
         [] fondue(ouverture:O fermeture:F M) then
             {FiltreFondueFermeture F
-            {FiltreFondueOuverture O {MusiqueToAudio M nil} 0.0 End}
+            {FiltreFondueOuverture {DureeToNbEch O} {MusiqueToAudio M nil} 0.0 End}
             _ End}
         %[] fondue_enchaine(duree:D M1 M2) then
         [] couper(debut:D fin:F M) then
