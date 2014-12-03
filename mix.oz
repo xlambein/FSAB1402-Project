@@ -88,17 +88,16 @@ fun {Mix Interprete Music}
     fun {Clip Low High AV End}
         case AV
         of H|T then
-            local R in
-                if H > High then
-                    R = High
-                else if H < Low then
-                    R = Low
-                else
-                    R = H
-                end
-                R|{Clip Low High T End}
+            R
+        in
+            if H < Low then
+                R = Low
+            elseif H > High then
+                R = High
+            else
+                R = H
             end
-            end
+            R|{Clip Low High T End}
         [] nil then
             End
         end
