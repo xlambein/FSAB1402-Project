@@ -1,19 +1,18 @@
 % Mix takes a score interpreter and a music as an argument, and returns an
 % audio vector.
 fun {Mix Interprete Music}
+    Step = 1.0 / {IntToFloat Projet.hz}
     
     fun {ToAVLength Duration}
         {FloatToInt Duration*{IntToFloat Projet.hz}}
     end
     
     fun {SmFactor Pos Dur}
-        Sm = 0.005 in
+        Sm = 0.05 in
         Pos/(Pos+Sm) * (Dur-Pos)/(Dur-Pos+Sm)
     end
     
     fun {SampleToAV Sample End}
-        Step = 1.0 / {IntToFloat Projet.hz}
-    in
         case Sample
         of silence(duree:D) then
             fun {Zeros Pos End}
@@ -26,7 +25,7 @@ fun {Mix Interprete Music}
         in
             {Zeros 0.0 End}
         
-        [] echantillon(hauteur:P duree:D instrument:I) then
+        [] echantillon(hauteur:P duree:D instrument:_) then
             Freq = {Pow 2. {IntToFloat P}/12.}*440.
             Tau = 6.283185307
             Omega = Tau*Freq
@@ -105,49 +104,41 @@ fun {Mix Interprete Music}
         end
     end
     
-    fun {EchoMusic Step Decay NumRepeat M End}
+    fun {EchoMusic RepStep Decay NumRepeat M End}
         IntSum = (1.0 - {Pow Decay {IntToFloat NumRepeat}+1.0}) / (1.0 - Decay)
         fun {ToMerge Lag Int I}
             if I == NumRepeat then
                 nil
             else
-                (Int#[voix([silence(duree:Lag)]) M])|{ToMerge Lag+Step Int*Decay I+1}
+                (Int#[voix([silence(duree:Lag)]) M])|{ToMerge Lag+RepStep Int*Decay I+1}
             end
         end
     in
         {MergeMusics {ToMerge 0.0 1.0/IntSum 0} End}
     end
     
-    fun {FadeIn Duration AV Pos End}
-        case AV
-        of H|T then
-            if Pos < Duration then
-                H*(Pos/Duration)|{FadeIn Duration T Pos+(1.0/Projet.hz) End}
-            else
-                H|T
-            end
-        [] nil then
-            End
-        end
-    end
-    
-    fun {FadeOut Duration AV Pos End}
-        case AV
-        of H|T then
-            local NextPos Rest in
-                Rest = {FadeOut Duration T NextPos End}
-                Pos = NextPos+(1.0/Projet.hz)
-
-                if Pos < Duration then
-                    H*(Pos/Duration)|Rest
+    fun {Fade InDur OutDur AV End}
+        
+        Dur = {IntToFloat {Length AV}} * Step
+        fun {ApplyFade Pos AV}
+            case AV
+            of H|T then
+                Hm
+            in
+                if Pos < InDur then
+                    Hm = H*Pos/InDur
+                elseif (Dur-Pos) < OutDur then
+                    Hm = H*(Dur-Pos)/OutDur
                 else
-                    H|Rest
+                    Hm = H
                 end
+                Hm|{ApplyFade Pos+Step T}
+            [] nil then
+                End
             end
-        [] nil then
-            Pos = 0.0
-            End
         end
+    in
+        {ApplyFade 0.0 AV}
     end
     
     fun {Cut I StartCut EndCut AV End}
@@ -218,12 +209,10 @@ fun {Mix Interprete Music}
             {RepeatNumber N nil {MusicToAV M nil} End}
         [] repetition(duree:D M) then
             {RepeatToLength {ToAVLength D} nil {MusicToAV M nil} End}
-        [] clip(bas:B haut:H M) then
-            {Clip B H {MusicToAV M nil} End}
-        [] fondue(ouverture:O fermeture:F M) then
-            {FadeOut F
-            {FadeIn O {MusicToAV M nil} 0.0 End}
-            _ End}
+        [] clip(bas:L haut:H M) then
+            {Clip L H {MusicToAV M nil} End}
+        [] fondu(ouverture:I fermeture:O M) then
+            {Fade I O {MusicToAV M nil} End}
         %[] fondue_enchaine(duree:D M1 M2) then
         [] couper(debut:D fin:F M) then
             {Cut {Min 0 {ToAVLength D}} {ToAVLength D} {ToAVLength F} {MusicToAV M nil} End}

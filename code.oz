@@ -32,7 +32,7 @@ local Mix Interprete Projet in
         
         %{Browse {Projet.run Mix Interprete partition(Music) 'out.wav'}}
         %{Browse {Projet.run Mix Interprete partition(MusicShort) 'out.wav'}}
-        {Browse {Projet.run Mix Interprete partition(Melody) 'out.wav'}}
+        %{Browse {Projet.run Mix Interprete partition(Melody) 'out.wav'}}
         
         %{Browse {Projet.run Mix Interprete partition([silence a]) 'out.wav'}}
         %{Browse {Interprete bourdon(note:a muet(b))}}
@@ -40,6 +40,7 @@ local Mix Interprete Projet in
         %{Browse {Projet.run Mix Interprete repetition(duree:5.0 partition([a b])) 'out.wav'}}
         %{Browse {Projet.run Mix Interprete merge([0.5#partition(e) 0.5#partition(a)]) 'out.wav'}}
         %{Browse {Projet.run Mix Interprete echo(delai:1.1 decadence:0.3 repetition:3 partition(a)) 'out.wav'}}
+        {Browse {Projet.run Mix Interprete fondu(ouverture:2.0 fermeture:2.0 partition(Melody)) 'out.wav'}}
         
         End={Time.time}
         
