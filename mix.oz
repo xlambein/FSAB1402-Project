@@ -1,5 +1,9 @@
 % Mix prends une musique et doit retourner un vecteur audio.
 fun {Mix Interprete Music}
+    fun {DureeToNbEch Duree}
+        {FloatToInt Duree*{IntToFloat Projet.hz}}
+    end
+
     fun {Vectorise Freq I N End}
         local Tau=6.283185307 X X0 F in
             if I < N then
@@ -21,17 +25,15 @@ fun {Mix Interprete Music}
     end
     
     fun {EchantillonToAudio Echantillon End}
-        local N NCut Freq in
-            N = {FloatToInt {IntToFloat Projet.hz}*Echantillon.duree}
+        local N Freq in
             case Echantillon
             of silence(duree:D) then
                 Freq = 0
             [] echantillon(hauteur:H duree:D instrument:I) then
                 Freq = {Pow 2. {IntToFloat H}/12.}*440.
             end
-            NCut = N mod {FloatToInt {IntToFloat Projet.hz}/Freq}
 
-            {Vectorise Freq 0 N-NCut {Vectorise 0 0 NCut End}}
+            {Vectorise Freq 0 {FloatToInt {IntToFloat Projet.hz}*Echantillon.duree} End}
         end
     end
     
@@ -141,6 +143,27 @@ fun {Mix Interprete Music}
         end
     end
     
+    fun {FitreCouper I Debut Fin VA End}
+        if I =< Fin then
+            if I < 0 then
+                0.|{FiltreCouper I+1 Debut Fin VA End}
+            else
+                case VA
+                of H|T then
+                    if I < Debut then
+                        0.|{FiltreCouper I+1 Debut Fin T End}
+                    else
+                        H|{FiltreCouper I+1 Debut Fin T End}
+                    end
+                else
+                    0.|{FiltreCouper I+1 Debut Fin T End}
+                end
+            end
+        else
+            End
+        end
+    end
+    
     fun {MergeWith I VA1 VA2 End}
         case VA1#VA2
         of (H1|T1)#(H2|T2) then
@@ -181,7 +204,7 @@ fun {Mix Interprete Music}
         [] repetition(nombre:N M) then
             {FiltreRepetitionNombre N nil {MorceauToAudio M nil} End}
         [] repetition(duree:D M) then
-            {FiltreRepetitionNbEch {FloatToInt D*{IntToFloat Projet.hz}} nil {MorceauToAudio M nil} End}
+            {FiltreRepetitionNbEch {DureeToNbEch D} nil {MorceauToAudio M nil} End}
         [] clip(bas:B haut:H M) then
             {FiltreClip B H {MorceauToAudio M nil} End}
         [] echo(delai:D M) then
@@ -195,7 +218,8 @@ fun {Mix Interprete Music}
             {FiltreFondueOuverture O {MorceauToAudio M nil} 0.0 End}
             _ End}
         %[] fondue_enchaine(duree:D M1 M2) then
-        %[] couper(debut:D fin:F M) then
+        [] couper(debut:D fin:F M) then
+            {FiltreCouper {Min 0 {DureeToNbEch D}} {DureeToNbEch D} {DureeToNbEch F} {MorceauToAudio M nil} End}
         end
     end
     
