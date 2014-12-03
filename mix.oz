@@ -5,6 +5,11 @@ fun {Mix Interprete Music}
         {FloatToInt Duree*{IntToFloat Projet.hz}}
     end
     
+    fun {Smoothing Pos D}
+        Sm = 0.005 in
+        Pos/(Pos+Sm) * (D-Pos)/(D-Pos+Sm)
+    end
+    
     fun {EchantillonToAudio Echantillon End}
         Pas = 1.0 / {IntToFloat Projet.hz}
     in
@@ -27,8 +32,7 @@ fun {Mix Interprete Music}
             Sm = 0.005
             fun {Sinusoid Pos End}
                 if Pos < D then
-                    F = 0.5 * Pos/(Pos+Sm) * (D-Pos)/(D-Pos+Sm) in
-                    F*{Sin Omega*Pos}|{Sinusoid Pos+Pas End}
+                    0.5*{Smoothing Pos D}*{Sin Omega*Pos}|{Sinusoid Pos+Pas End}
                 else
                     End
                 end
