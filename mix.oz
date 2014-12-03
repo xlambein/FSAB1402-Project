@@ -148,14 +148,14 @@ fun {Mix Interprete Music}
         end
     end
     
-    fun {MergeTwo I1 VA1 I2 VA2 End}
+    fun {MergeWith I VA1 VA2 End}
         case VA1#VA2
         of (H1|T1)#(H2|T2) then
-            (I1*H1 + I2*H2)|{MergeTwo I1 T1 I2 T2 End}
+            (I*H1 + H2)|{MergeTwo I T1 T2 End}
         of (H1|T1)#nil then
-            (I1*H1)|{MergeTwo I1 T1 I2 nil End}
+            (I*H1)|{MergeWith I T1 nil End}
         of nil#(H2|T2) then
-            (I1*H1)|{MergeTwo I1 nil I2 T2 End}
+            H2|{MergeWith I1 nil I2 T2 End}
         of nil#nil then
             End
         end
@@ -163,8 +163,8 @@ fun {Mix Interprete Music}
     
     fun {Merge List End}
         case List
-        of (I#VA)|T then
-            {MergeTwo I {MorceauToAudio H nil} {MergeList T nil} End}
+        of (I#M)|T then
+            {MergeWith I {MorceauToAudio M nil} {MergeList T nil} End}
         else
             nil
         end
