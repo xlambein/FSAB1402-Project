@@ -1,39 +1,40 @@
 % Mix prends une musique et doit retourner un vecteur audio.
 fun {Mix Interprete Music}
+
     fun {DureeToNbEch Duree}
         {FloatToInt Duree*{IntToFloat Projet.hz}}
     end
-
-    fun {Vectorise Freq I N End}
-        local Tau=6.283185307 X X0 F in
-            if I < N then
-                %X = 500.*{IntToFloat I}/{IntToFloat Projet.hz}
-                %X0 = 500.*{IntToFloat N}/{IntToFloat Projet.hz}
-                %F = X/(X + 1.)*(X-X0)/(X-X0-1.)
-                X = {IntToFloat I}/{IntToFloat Projet.hz}
-                X0 = {IntToFloat N}/{IntToFloat Projet.hz}
-                F = X/(X + 0.005) * (X0-X)/(X0-X + 0.005)
-                if Freq == 0 then
-                    0.|{Vectorise 0 I+1 N End}
-                else
-                    F*0.5*{Sin Tau*Freq*{IntToFloat I}/{IntToFloat Projet.hz}}|{Vectorise Freq I+1 N End}
-                end
-            else
-                End
-            end
-        end
-    end
     
     fun {EchantillonToAudio Echantillon End}
-        local Freq in
-            case Echantillon
-            of silence(duree:D) then
-                Freq = 0
-            [] echantillon(hauteur:H duree:D instrument:I) then
-                Freq = {Pow 2. {IntToFloat H}/12.}*440.
+        Pas = 1.0 / {IntToFloat Projet.hz}
+    in
+        case Echantillon
+        of silence(duree:D) then
+            fun {Zeros Pos End}
+                if Pos < D then
+                    0.0|{Zeros Pos+Pas End}
+                else
+                    End
+                end
             end
-
-            {Vectorise Freq 0 {FloatToInt {IntToFloat Projet.hz}*Echantillon.duree} End}
+        in
+            {Zeros 0.0 End}
+        
+        [] echantillon(hauteur:H duree:D instrument:I) then
+            Freq = {Pow 2. {IntToFloat H}/12.}*440.
+            Tau = 6.283185307
+            Omega = Tau*Freq
+            Sm = 0.005
+            fun {Sinusoid Pos End}
+                if Pos < D then
+                    F = 0.5 * Pos/(Pos+Sm) * (D-Pos)/(D-Pos+Sm) in
+                    F*{Sin Omega*Pos}|{Sinusoid Pos+Pas End}
+                else
+                    End
+                end
+            end
+        in
+            {Sinusoid 0.0 End}
         end
     end
     
