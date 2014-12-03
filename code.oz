@@ -17,7 +17,8 @@ local Mix Interprete Projet in
     \insert 'interprete.oz'
 
     local 
-        Music = {Projet.load 'joie.dj.oz'}      
+        Music = \insert 'joie.dj.oz'
+        Harmonique = transpose(demitons:12 Music)  
     in
         % Votre code DOIT appeler Projet.run UNE SEULE fois.  Lors de cet appel,
         % vous devez mixer une musique qui démontre les fonctionalités de votre
