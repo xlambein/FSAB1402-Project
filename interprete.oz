@@ -1,25 +1,25 @@
-% Transforme une partition en une suite d'échantillons.
-fun {Interprete Partition}
+% Transforms a score into a list of samples (a voice)
+fun {Interprete Score}
     
-    % Calculs de notes
+    % Note computations
     ToNote
-    NoteHauteur
+    NotePitch
     
-    % Calculs de transformations
-    CalculerDuree
-    MakeDuree
-    MakeEtirer
-    MakeBourdon
-    MakeMuet
+    % Transformations
+    Duration
+    MakeScale
+    MakeResize
+    MakeMute
+    MakeConstant
     MakeTranspose
     
-    % Interprétation
-    Composer
+    % Interpretation
+    Compose
     InterpreteRecursive
     
 in
     
-    % Exprime une note a, b3, e#2, ... comme un record note(...).
+    % Expresses a note (a, b3, e#2, ...) as a record note(...).
     fun {ToNote Note}
         case Note
         of Nom#Octave then note(nom:Nom octave:Octave alteration:'#')
@@ -33,168 +33,164 @@ in
         end
     end
     
-    % Donne la hauteur d'une note par rapport à a4, en demi-tons.
-    fun {NoteHauteur Note}
-        Base
+    % Gives the pitch of a note relative a4, in semitones.
+    fun {NotePitch Note}
+        InOctave
     in
-        % Hauteur de la note dans l'octave
+        % Pitch of the note within the octave
         case Note.nom
-        of c then Base=0
-        [] d then Base=2
-        [] e then Base=4
-        [] f then Base=5
-        [] g then Base=7
-        [] a then Base=9
-        [] b then Base=11
+        of c then InOctave = 0
+        [] d then InOctave = 2
+        [] e then InOctave = 4
+        [] f then InOctave = 5
+        [] g then InOctave = 7
+        [] a then InOctave = 9
+        [] b then InOctave = 11
         end
         
-        % La différence des hauteurs dépend de la différence à l'intérieur de
-        % l'octave, de la différence d'octave et de l'altération.
+        % The pitch difference depends on the difference within an octave,
+        % and on the octave difference. A sharp (#) adds one semitone.
         case Note.alteration
-        of '#' then Base-9 + (Note.octave-4)*12 + 1
-        [] none then Base-9 + (Note.octave-4)*12
+        of '#' then InOctave-9 + (Note.octave-4)*12 + 1
+        [] none then InOctave-9 + (Note.octave-4)*12
         end
     end
     
     
-    % Calcule la durée d'une partition.
-    fun {CalculerDuree Partition}
+    % Computes the duration of a score
+    fun {Duration Score}
         
-        % Le calcul dépend du type de partition.
-        case Partition
+        % Computation depends on the type of score.
+        case Score
         
-        % Si c'est une suite de partitions, on la décompose.
+        % If it is a list of scores, we decompose it.
         of nil then
             0.0
         [] H|T then
-            {CalculerDuree H} + {CalculerDuree T}
+            {Duration H} + {Duration T}
         
         
-        % Si c'est une transformation qui modifie la durée, on la prend en
-        % compte.
+        % If it is a transformation that affects time, we take it into account.
         [] duree(secondes:D _) then
             D
-        [] etirer(facteur:F P) then
-            F * {CalculerDuree P}
+        [] etirer(facteur:F S) then
+            F * {Duration S}
         
-        % Sinon, la durée est celle de la partition intégrée.
-        [] bourdon(note:_ P) then
-            {CalculerDuree P}
-        [] muet(P) then
-            {CalculerDuree P}
-        [] transpose(demitons:_ P) then
-            {CalculerDuree P}
+        % For other transformations, it is the duration of the embedded score.
+        [] bourdon(note:_ S) then
+            {Duration S}
+        [] muet(S) then
+            {Duration S}
+        [] transpose(demitons:_ S) then
+            {Duration S}
 
-        % Enfin, si c'est une note, sa durée est de 1.
+        % Finally, if it's a note, duration is 1.
         else
             1.0
         end
     end
     
-    % Renvoie une fonction qui raccourcit ou allonge les échantillons d'une
-    % partition pour que cette dernière atteigne une durée donnée.
-    fun {MakeDuree Partition DureeTotale}
-        {MakeEtirer DureeTotale/{CalculerDuree Partition}}
-    end
-    
-    % Renvoie une fonction qui étire un échantillon par un certain facteur.
-    fun {MakeEtirer Facteur}
-        fun {$ Echantillon}
-            case Echantillon
+    % Makes a function that scales samples by some factor.
+    fun {MakeScale Factor}
+        fun {$ Sample}
+            case Sample
             of silence(duree:D) then
-                silence(duree:D*Facteur)
-            [] echantillon(hauteur:H duree:D instrument:I) then
-                echantillon(hauteur:H duree:D*Facteur instrument:I)
+                silence(duree:D*Factor)
+            [] echantillon(hauteur:P duree:D instrument:I) then
+                echantillon(hauteur:P duree:D*Factor instrument:I)
             end
         end
     end
     
-    % Renvoie une fonction qui change la note d'un échantillon.
-    fun {MakeBourdon Note}
+    % Makes a function that resizes samples, so that the score can reach a
+    % specified length.
+    fun {MakeResize Score NewDuration}
+        {MakeScale NewDuration/{Duration Score}}
+    end
+    
+    % Make a function that changes any sample to a rest.
+    fun {MakeMute}
+        fun {$ Sample}
+            silence(duree:Sample.duree)
+        end
+    end
+    
+    % Make a function that changes the notes of samples to a specified note.
+    fun {MakeConstant Note}
         case Note
         of silence then
-            fun {$ Echantillon}
-                silence(duree:Echantillon.duree)
-            end
+            {MakeMute}
         else
-            Hauteur = {NoteHauteur {ToNote Note}}
+            Pitch = {NotePitch {ToNote Note}}
         in
-            fun {$ Echantillon}
-                echantillon(hauteur:Hauteur
-                            duree:Echantillon.duree
+            fun {$ Sample}
+                echantillon(hauteur:Pitch
+                            duree:Sample.duree
                             instrument:none)
             end
         end
     end
     
-    % Renvoie une fonction qui transforme un échantillon en un silence.
-    fun {MakeMuet}
-        {MakeBourdon silence}
-    end
-    
-    % Renvoie une fonction qui transpose un échantillon d'un nombre de demi-tons
-    % donné.
-    fun {MakeTranspose Demitons}
-        fun {$ Echantillon}
-            case Echantillon
-            % Si c'est un silence, il ne faut rien changer.
+    % Makes a function that transposes a sample by some number of semitones.
+    fun {MakeTranspose Semitones}
+        fun {$ Sample}
+            case Sample
+            % If it is a silence, there is nothing to change.
             of silence(duree:_) then
-                Echantillon
-            % Sinon, on augmente la hauteur du nombre donné.
-            [] echantillon(hauteur:H duree:D instrument:I) then
-                echantillon(hauteur:H+Demitons duree:D instrument:I)
+                Sample
+            % Otherwise we add the semitones to the pitch.
+            [] echantillon(hauteur:P duree:D instrument:I) then
+                echantillon(hauteur:P+Semitones duree:D instrument:I)
             end
         end
     end
     
     
-    % Composée de deux transformations.
-    fun {Composer F1 F2}
+    % Transformation composition.
+    fun {Compose F1 F2}
         fun {$ A}
             {F1 {F2 A}}
         end
     end
     
-    % Interprète une partition de manière récursive, où Mod est une ou plusieurs
-    % transformations à appliquer aux échantillons, et Next un accumulateur
-    % d'échantillons déjà calculés à ajouter à la fin.
-    fun {InterpreteRecursive Partition Mod Next}
+    % Interpretes a score recursively, where Mod is a series of transformations
+    % to apply to samples, and Next is an accumulator of samples.
+    fun {InterpreteRecursive Score Mod Next}
         
-        % La prochaine opération dépend du type de partition
-        case Partition
+        % The next operation depends on the type of score.
+        case Score
         
-        % Si c'est une suite de partitions, on la décompose.
+        % If it is a list of scores, we decompose it.
         of nil then
             Next
         [] H|T then
             {InterpreteRecursive H Mod {InterpreteRecursive T Mod Next}}
-
-        % Si c'est une transformation, on l'ajoute aux transformations Mod à
-        % appliquer par après.
-        [] duree(secondes:D P) then
-            {InterpreteRecursive P {Composer Mod {MakeDuree P D}} Next}
-        [] etirer(facteur:F P) then
-            {InterpreteRecursive P {Composer Mod {MakeEtirer F}} Next}
-        [] bourdon(note:N P) then
-            {InterpreteRecursive P {Composer Mod {MakeBourdon N}} Next}
-        [] muet(P) then
-            {InterpreteRecursive P {Composer Mod {MakeMuet}} Next}
-        [] transpose(demitons:DT P) then
-            {InterpreteRecursive P {Composer Mod {MakeTranspose DT}} Next}
-
-        % Si c'est une note, on prend un échantillon de durée 1 correspondant,
-        % on applique les transformations, et on l'ajoute en tête de liste.
+        
+        % If it is a transformation, we add it at the beginning of Mod, since
+        % it has to be performed first. (Beware of the composition order!)
+        [] duree(secondes:D S) then
+            {InterpreteRecursive S {Compose Mod {MakeResize S D}} Next}
+        [] etirer(facteur:F S) then
+            {InterpreteRecursive S {Compose Mod {MakeScale F}} Next}
+        [] muet(S) then
+            {InterpreteRecursive S {Compose Mod {MakeMute}} Next}
+        [] bourdon(note:N S) then
+            {InterpreteRecursive S {Compose Mod {MakeConstant N}} Next}
+        [] transpose(demitons:St S) then
+            {InterpreteRecursive S {Compose Mod {MakeTranspose St}} Next}
+        
+        % If it is a note, we create the right 1-second sample, we apply the
+        % transformations, and we add it to the list.
         [] silence then
             {Mod silence(duree:1.0)}|Next
-        else
-            {Mod echantillon(hauteur:{NoteHauteur {ToNote Partition}}
+        [] RawNote then
+            {Mod echantillon(hauteur:{NotePitch {ToNote RawNote}}
                              duree:1.0
                              instrument:none)}|Next
         end
     end
     
-    
-    % On appelle la fonction récursive avec une transformation identité et un
-    % accumulateur vide.
-    {InterpreteRecursive Partition fun {$ Echantillon} Echantillon end nil}
+    % We call the recursive function with the identity transformation and an
+    % empty accumulator.
+    {InterpreteRecursive Score fun {$ Sample} Sample end nil}
 end
