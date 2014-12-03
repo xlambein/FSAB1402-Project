@@ -3,9 +3,12 @@ fun {Mix Interprete Music} Vectorise EchantillonToAudio VoixToAudio FiltreRenver
     fun {Vectorise Freq I N End}
         local Tau=6.283185307 X X0 F in
             if I < N then
-                X = 500.*{IntToFloat I}/{IntToFloat Projet.hz}
-                X0 = 500.*{IntToFloat N}/{IntToFloat Projet.hz}
-                F = X/(X + 1.)*(X-X0)/(X-X0-1.)
+                %X = 500.*{IntToFloat I}/{IntToFloat Projet.hz}
+                %X0 = 500.*{IntToFloat N}/{IntToFloat Projet.hz}
+                %F = X/(X + 1.)*(X-X0)/(X-X0-1.)
+                X = {IntToFloat I}/{IntToFloat Projet.hz}
+                X0 = {IntToFloat N}/{IntToFloat Projet.hz}
+                F = X/(X + 0.005) * (X0-X)/(X0-X + 0.005)
                 if Freq == 0 then
                     0.|{Vectorise 0 I+1 N End}
                 else
@@ -34,9 +37,7 @@ fun {Mix Interprete Music} Vectorise EchantillonToAudio VoixToAudio FiltreRenver
     
     fun {VoixToAudio Voix End}
         case Voix
-        of voix(V) then
-            {VoixToAudio V End}
-        [] H|T then
+        of H|T then
             {EchantillonToAudio H {VoixToAudio T End}}
         else
             End
@@ -145,7 +146,7 @@ fun {Mix Interprete Music} Vectorise EchantillonToAudio VoixToAudio FiltreRenver
             {VoixToAudio V End}
         [] partition(P) then
             local V in
-                {VoixToAudio voix({Interprete P}) End}
+                {VoixToAudio {Interprete P} End}
             end
             
         [] wave(F) then
