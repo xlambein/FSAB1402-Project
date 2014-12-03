@@ -100,17 +100,8 @@ fun {Mix Interprete Music}
         end
     end
     
-    /*fun {EchoIntensiteTotale Decadence Repetition A1 A2}
-        if Repetition == 0 then
-            A1
-        else
-            local R=A2*Decadence in
-                {EchoIntensiteTotale Decadence Repetition-1 A1+R R}
-            end
-        end
-    end*/
     fun {FiltreEcho Delai Decadence Repetition VA End}
-        DureeTotale = (1.0 - {Pow Decadence {IntToFloat Repetition+1.0}) / (1.0 - Decadence)
+        DureeTotale = (1.0 - {Pow Decadence {IntToFloat Repetition+1.0}}) / (1.0 - Decadence)
     in
         %{FiltreMerge
         VA|End
@@ -151,12 +142,12 @@ fun {Mix Interprete Music}
     fun {MergeWith I VA1 VA2 End}
         case VA1#VA2
         of (H1|T1)#(H2|T2) then
-            (I*H1 + H2)|{MergeTwo I T1 T2 End}
-        of (H1|T1)#nil then
+            (I*H1 + H2)|{MergeWith I T1 T2 End}
+        [] (H1|T1)#nil then
             (I*H1)|{MergeWith I T1 nil End}
-        of nil#(H2|T2) then
-            H2|{MergeWith I1 nil I2 T2 End}
-        of nil#nil then
+        [] nil#(H2|T2) then
+            H2|{MergeWith I nil T2 End}
+        [] nil#nil then
             End
         end
     end
@@ -164,7 +155,7 @@ fun {Mix Interprete Music}
     fun {Merge List End}
         case List
         of (I#M)|T then
-            {MergeWith I {MorceauToAudio M nil} {MergeList T nil} End}
+            {MergeWith I {MorceauToAudio M nil} {Merge T nil} End}
         else
             nil
         end
@@ -187,7 +178,7 @@ fun {Mix Interprete Music}
             {FiltreRenverser {MorceauToAudio M nil} End}
         [] repetition(nombre:N M) then
             local Audio={MorceauToAudio M nil} in
-                {FiltreRepetitionNombre N Audio Audio End}
+                {FiltreRepetitionNombre N Audio nil End}
             end
         [] repetition(duree:D M) then
             local Audio={MorceauToAudio M nil} in
