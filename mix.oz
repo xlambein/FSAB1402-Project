@@ -140,6 +140,28 @@ fun {Mix Interprete Music}
         end
     end
     
+    fun {MergeTwo I1 VA1 I2 VA2 End}
+        case VA1#VA2
+        of (H1|T1)#(H2|T2) then
+            (I1*H1 + I2*H2)|{MergeTwo I1 T1 I2 T2 End}
+        of (H1|T1)#nil then
+            (I1*H1)|{MergeTwo I1 T1 I2 nil End}
+        of nil#(H2|T2) then
+            (I1*H1)|{MergeTwo I1 nil I2 T2 End}
+        of nil#nil then
+            End
+        end
+    end
+    
+    fun {Merge List End}
+        case List
+        of (I#VA)|T then
+            {MergeTwo I {MorceauToAudio H nil} {MergeList T nil} End}
+        else
+            nil
+        end
+    end
+    
     fun {MorceauToAudio Morceau End}
         case Morceau
         of voix(V) then
@@ -151,8 +173,8 @@ fun {Mix Interprete Music}
             
         [] wave(F) then
             {Projet.readFile F}|End
-        %[] merge(M) then
-        %    
+        [] merge(L) then
+            {Merge L End}
         
         %filtres
         [] renverser(M) then
