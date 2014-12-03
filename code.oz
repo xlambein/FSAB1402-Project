@@ -32,7 +32,7 @@ local Mix Interprete Projet in
         %{Browse {Projet.run Mix Interprete repetition(nombre:3 partition([a b])) 'out.wav'}}
         %{Browse {Projet.run Mix Interprete repetition(duree:5.0 partition([a b])) 'out.wav'}}
         %{Browse {Projet.run Mix Interprete merge([0.5#partition(e) 0.5#partition(a)]) 'out.wav'}}
-        {Browse {Projet.run Mix Interprete echo(delai:1.1 decadence:0.5 repetition:3 partition(a)) 'out.wav'}}
+        {Browse {Projet.run Mix Interprete echo(delai:1.1 decadence:0.3 repetition:3 partition(a)) 'out.wav'}}
     end
 end
 

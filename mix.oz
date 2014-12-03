@@ -22,7 +22,6 @@ fun {Mix Interprete Music}
     
     fun {EchantillonToAudio Echantillon End}
         local N Freq in
-            {Browse Echantillon}
             N = {FloatToInt {IntToFloat Projet.hz}*Echantillon.duree}
             case Echantillon
             of silence(duree:D) then
@@ -37,11 +36,9 @@ fun {Mix Interprete Music}
     
     fun {VoixToAudio Voix End}
         case Voix
-        of voix(V) then
-            {VoixToAudio V End}
-        [] H|T then
+        of H|T then
             {EchantillonToAudio H {VoixToAudio T End}}
-        else
+        [] nil then
             End
         end
     end
@@ -108,7 +105,7 @@ fun {Mix Interprete Music}
             if RepetIndex == Repetition then
                 nil
             else
-                (Intensite#[voix(silence(duree:Decalage)) M])|{ToMerge Decalage+Delai Intensite*Decadence RepetIndex+1}
+                (Intensite#[voix([silence(duree:Decalage)]) M])|{ToMerge Decalage+Delai Intensite*Decadence RepetIndex+1}
             end
         end
     in
