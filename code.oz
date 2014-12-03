@@ -18,7 +18,7 @@ local Mix Interprete Projet in
 
     local 
         Music = \insert 'joie.dj.oz'
-        Harmonique = transpose(demitons:12 Music)  
+        %Harmonique = transpose(demitons:12 Music)  
     in
         % Votre code DOIT appeler Projet.run UNE SEULE fois.  Lors de cet appel,
         % vous devez mixer une musique qui démontre les fonctionalités de votre
@@ -26,8 +26,10 @@ local Mix Interprete Projet in
         %
         % Si votre code devait ne pas passer nos tests, cet exemple serait le
         % seul qui ateste de la validité de votre implémentation.
-        {Browse {Projet.run Mix Interprete partition(Music) 'out.wav'}}
+        %{Browse {Projet.run Mix Interprete partition(Music) 'out.wav'}}
         %{Browse {Interprete bourdon(note:a muet(b))}}
+        %{Browse {Projet.run Mix Interprete repetition(nombre:3 partition([a b])) 'out.wav'}}
+        {Browse {Projet.run Mix Interprete repetition(duree:5.0 partition([a b])) 'out.wav'}}
     end
 end
 

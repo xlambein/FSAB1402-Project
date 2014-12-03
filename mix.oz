@@ -55,29 +55,31 @@ fun {Mix Interprete Music}
         end
     end
     
-    fun {FiltreRepetitionNombre Nombre VA FullVA End}
-        case VA
+    fun {FiltreRepetitionNombre Nombre Start VA End}
+        case Start
         of H|T then
-            H|{FiltreRepetitionNombre Nombre T FullVA End}
+            H|{FiltreRepetitionNombre Nombre T VA End}
         [] nil then
-            if Nombre > 0 then
-                {FiltreRepetitionNombre Nombre-1 FullVA FullVA End}
-            else
+            if Nombre == 0 then
                 End
+            else
+                {FiltreRepetitionNombre Nombre-1 VA VA End}
             end
         end
     end
     
-    fun {FiltreRepetitionNbEch NbEch VA FullVA End}
-        if NbEch > 0 then
-            case VA
-            of H|T then
-                H|{FiltreRepetitionNombre NbEch-1 T FullVA End}
-            [] nil then
-                {FiltreRepetitionNombre NbEch-1 FullVA FullVA End}
-            end
-        else
+    fun {FiltreRepetitionNbEch NbEch Start VA End}
+        %{Browse NbEch}
+        if NbEch == 0 then
             End
+        else
+            case Start
+            of H|T then
+                H|{FiltreRepetitionNbEch NbEch-1 T VA End}
+            [] nil then
+                %{Browse 1}
+                {FiltreRepetitionNbEch NbEch VA VA End}
+            end
         end
     end
     
@@ -101,7 +103,7 @@ fun {Mix Interprete Music}
     end
     
     fun {FiltreEcho Delai Decadence Repetition VA End}
-        DureeTotale = (1.0 - {Pow Decadence {IntToFloat Repetition+1.0}}) / (1.0 - Decadence)
+        IntensiteTotale = (1.0 - {Pow Decadence {IntToFloat Repetition+1.0}}) / (1.0 - Decadence)
     in
         %{FiltreMerge
         VA|End
@@ -177,13 +179,9 @@ fun {Mix Interprete Music}
         [] renverser(M) then
             {FiltreRenverser {MorceauToAudio M nil} End}
         [] repetition(nombre:N M) then
-            local Audio={MorceauToAudio M nil} in
-                {FiltreRepetitionNombre N Audio nil End}
-            end
+            {FiltreRepetitionNombre N nil {MorceauToAudio M nil} End}
         [] repetition(duree:D M) then
-            local Audio={MorceauToAudio M nil} in
-                {FiltreRepetitionNbEch {FloatToInt D*{IntToFloat Projet.hz}} Audio Audio End}
-            end
+            {FiltreRepetitionNbEch {FloatToInt D*{IntToFloat Projet.hz}} nil {MorceauToAudio M nil} End}
         [] clip(bas:B haut:H M) then
             {FiltreClip B H {MorceauToAudio M nil} End}
         [] echo(delai:D M) then
@@ -212,7 +210,7 @@ fun {Mix Interprete Music}
         end
     end
     
-    in
+in
     
     {MusiqueToAudio Music nil}
 end
