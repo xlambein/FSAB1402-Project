@@ -109,6 +109,12 @@ fun {Mix Interprete Music} Vectorise EchantillonToAudio VoixToAudio FiltreRenver
             end
         end
     end*/
+    fun {FiltreEcho Delai Decadence Repetition VA End}
+        DureeTotale = (1.0 - {Pow Decadence {IntToFloat Repetition+1.0}) / (1.0 - Decadence)
+    in
+        %{FiltreMerge
+        VA|End
+    end
     
     fun {FiltreFondueOuverture Duree VA Pos End}
         case VA
@@ -167,13 +173,12 @@ fun {Mix Interprete Music} Vectorise EchantillonToAudio VoixToAudio FiltreRenver
             end
         [] clip(bas:B haut:H M) then
             {FiltreClip B H {MorceauToAudio M nil} End}
-        %[] echo(delai:D M) then
-        %    {MorceauToAudio merge([0.5#M 0.5#[voix([silence(duree:D)]) M]])}
-        %[] echo(delai:D decadence:Dc M) then
-        %
-        %[] echo(delai:D decadence:Dc repetition:R M) then
-        %    local IntensiteTotale={EchoIntensiteTotale D R 1.0 1.0} in
-        %    end
+        [] echo(delai:D M) then
+            {FiltreEcho D 1.0 1 {MorceauToAudio M nil} End}
+        [] echo(delai:D decadence:Dc M) then
+            {FiltreEcho D Dc 1 {MorceauToAudio M nil} End}
+        [] echo(delai:D decadence:Dc repetition:R M) then
+            {FiltreEcho D Dc R {MorceauToAudio M nil} End}
         [] fondue(ouverture:O fermeture:F M) then
             {FiltreFondueFermeture F
             {FiltreFondueOuverture O {MorceauToAudio M nil} 0.0 End}
