@@ -1,5 +1,5 @@
 % Mix prends une musique et doit retourner un vecteur audio.
-fun {Mix Interprete Music} Vectorise EchantillonToAudio VoixToAudio FiltreRenverser FiltreRepetitionNombre FiltreRepetitionNbEch FiltreClip EchoIntensiteTotale FiltreFondueOuverture FiltreFondueFermeture MorceauToAudio MusiqueToAudio in
+fun {Mix Interprete Music}
     fun {Vectorise Freq I N End}
         local Tau=6.283185307 X X0 F in
             if I < N then
@@ -148,6 +148,28 @@ fun {Mix Interprete Music} Vectorise EchantillonToAudio VoixToAudio FiltreRenver
         end
     end
     
+    fun {MergeTwo I1 VA1 I2 VA2 End}
+        case VA1#VA2
+        of (H1|T1)#(H2|T2) then
+            (I1*H1 + I2*H2)|{MergeTwo I1 T1 I2 T2 End}
+        of (H1|T1)#nil then
+            (I1*H1)|{MergeTwo I1 T1 I2 nil End}
+        of nil#(H2|T2) then
+            (I1*H1)|{MergeTwo I1 nil I2 T2 End}
+        of nil#nil then
+            End
+        end
+    end
+    
+    fun {Merge List End}
+        case List
+        of (I#VA)|T then
+            {MergeTwo I {MorceauToAudio H nil} {MergeList T nil} End}
+        else
+            nil
+        end
+    end
+    
     fun {MorceauToAudio Morceau End}
         case Morceau
         of voix(V) then
@@ -157,8 +179,8 @@ fun {Mix Interprete Music} Vectorise EchantillonToAudio VoixToAudio FiltreRenver
             
         [] wave(F) then
             {Projet.readFile F}|End
-        %[] merge(M) then
-        %    
+        [] merge(L) then
+            {Merge L End}
         
         %filtres
         [] renverser(M) then
@@ -198,6 +220,8 @@ fun {Mix Interprete Music} Vectorise EchantillonToAudio VoixToAudio FiltreRenver
             {MorceauToAudio Musique End}
         end
     end
+    
+    in
     
     {MusiqueToAudio Music nil}
 end
