@@ -17,7 +17,8 @@ local Mix Interprete Projet in
     \insert 'interprete.oz'
 
     local 
-        [Music MusicShort] = \insert 'joie.dj.oz'
+        %[Music MusicShort] = \insert 'joie.dj.oz'
+        Melody = \insert 'small-melody.dj.oz'
         Start End
     in
         % Votre code DOIT appeler Projet.run UNE SEULE fois.  Lors de cet appel,
@@ -29,8 +30,10 @@ local Mix Interprete Projet in
         
         Start={Time.time}
         
-        {Browse {Projet.run Mix Interprete partition(Music) 'out.wav'}}
+        %{Browse {Projet.run Mix Interprete partition(Music) 'out.wav'}}
         %{Browse {Projet.run Mix Interprete partition(MusicShort) 'out.wav'}}
+        {Browse {Projet.run Mix Interprete partition(Melody) 'out.wav'}}
+        
         %{Browse {Projet.run Mix Interprete partition([silence a]) 'out.wav'}}
         %{Browse {Interprete bourdon(note:a muet(b))}}
         %{Browse {Projet.run Mix Interprete repetition(nombre:3 partition([a b])) 'out.wav'}}

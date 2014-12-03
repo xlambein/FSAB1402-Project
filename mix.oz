@@ -1,4 +1,4 @@
-% Mix takes an score interpreter and a music as an argument, and returns an
+% Mix takes a score interpreter and a music as an argument, and returns an
 % audio vector.
 fun {Mix Interprete Music}
     
