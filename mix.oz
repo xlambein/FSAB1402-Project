@@ -37,7 +37,9 @@ fun {Mix Interprete Music} Vectorise EchantillonToAudio VoixToAudio FiltreRenver
     
     fun {VoixToAudio Voix End}
         case Voix
-        of H|T then
+        of voix(V) then
+            {VoixToAudio V End}
+        [] H|T then
             {EchantillonToAudio H {VoixToAudio T End}}
         else
             End
@@ -145,9 +147,7 @@ fun {Mix Interprete Music} Vectorise EchantillonToAudio VoixToAudio FiltreRenver
         of voix(V) then
             {VoixToAudio V End}
         [] partition(P) then
-            local V in
-                {VoixToAudio {Interprete P} End}
-            end
+            {VoixToAudio {Interprete P} End}
             
         [] wave(F) then
             {Projet.readFile F}|End
@@ -170,12 +170,13 @@ fun {Mix Interprete Music} Vectorise EchantillonToAudio VoixToAudio FiltreRenver
         %[] echo(delai:D M) then
         %    {MorceauToAudio merge([0.5#M 0.5#[voix([silence(duree:D)]) M]])}
         %[] echo(delai:D decadence:Dc M) then
+        %
         %[] echo(delai:D decadence:Dc repetition:R M) then
         %    local IntensiteTotale={EchoIntensiteTotale D R 1.0 1.0} in
         %    end
         [] fondue(ouverture:O fermeture:F M) then
             {FiltreFondueFermeture F
-            {FiltreFondueOuverture O {MorceauToAudio M this} 0.0 End}
+            {FiltreFondueOuverture O {MorceauToAudio M nil} 0.0 End}
             _ End}
         %[] fondue_enchaine(duree:D M1 M2) then
         %[] couper(debut:D fin:F M) then
