@@ -35,8 +35,9 @@ local Mix Interprete Projet ProcBenchmark FunBenchmark in
     end
 
     local 
-        %[Joie JoieShort] = \insert 'joie.dj.oz'
-        %Soupe = \insert 'soupe.dj.oz'
+        [Joie JoieShort] = \insert 'joie.dj.oz'
+        Soupe = \insert 'soupe.dj.oz'
+        Compo = \insert 'compo.dj.oz'
         Zelda = \insert 'zelda.dj.oz'
     in
         % Votre code DOIT appeler Projet.run UNE SEULE fois.  Lors de cet appel,
@@ -51,6 +52,7 @@ local Mix Interprete Projet ProcBenchmark FunBenchmark in
         %{Browse {Projet.run Mix Interprete partition(Joie) 'out.wav'}}
         %{Browse {Projet.run Mix Interprete partition(JoieShort) 'out.wav'}}
         %{Browse {Projet.run Mix Interprete partition(Soupe) 'out.wav'}}
+        %{Browse {Projet.run Mix Interprete Compo 'compo.wav'}}
         {Browse {Projet.run Mix Interprete Zelda 'out.wav'}}
         
         %{Browse {Projet.run Mix Interprete partition([silence a]) 'out.wav'}}
