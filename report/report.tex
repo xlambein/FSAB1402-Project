@@ -164,6 +164,10 @@ in
         filtre sur ses éléments, ce que fait la sous-fonction \texttt{ApplyEnv}.
 \end{itemize}
 
+\subsection{Complexité}
+
+Notre code ne présente jamais de boucles imbriquées sur des listes d'échantillons ou de vecteurs audio, et ce notamment grâce à l'usage de \texttt{Next}. Nous avons donc une complexité linéaire. 
+
 \section{Limitations}
 
 Lors de l'implémentation du projet, trois limitations nous sont rapidement apparues: le format des partitions, la lenteur et le manque de robustesse.
@@ -174,8 +178,6 @@ Le premier obstacle rencontré lors de l'écriture d'une musique pour le projet 
 Ensuite, et il s'agit sans doute du plus grand obstacle, le programme, à cause de Mozart 2, est incroyablement lent: une musique de quelques notes prends plusieurs dizaines de secondes à \og{}compiler\fg{}.
 
 Enfin, le dernier point n'est pas un obstacle à l'utilisateur mais est néanmoins très important: notre programme ne présente aucune gestion des erreurs. Un \emph{input} erronné n'est donc jamais susceptible de produire un message d'erreur clair et adapté au problème; au lieu de cela, seul les erreurs de Oz sont affichées et, souvent, elles n'offrent que peu d'indications quant à l'origine du problème. Cet aspect aurait pu être adressé en utilisant des exceptions, au prix d'obtenir un code qui ne respecte plus totalement le paradigme fonctionnel.
-
-\section{Complexité}
 
 \section{Extensions}
 
