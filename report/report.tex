@@ -15,7 +15,46 @@
 \section{Structure et Conception}
 \label{sec:struct}
 
+\subsection{Conception générale}
+
+Pour plus de clareté, nous avons choisi de diviser notre code source en quatre fichiers différents, correspondant à quatre fonctions ou aspects particuliers :
+\begin{itemize}
+    \item \texttt{code.oz:} rassemble les autres fichers \texttt{.oz} et exécute \texttt{Project.run};
+    \item \texttt{interprete.oz:} définit la fonction \texttt{Interprete}, servant à transformer une partition en liste d'échantillons ;
+    \item \texttt{mix.oz:} définit la fonction \texttt{Mix}, servant à transformer une liste d'échantillons et d'effets en vecteur audio ;
+    \item \texttt{envelopes.oz:} définit les différentes enveloppes que le programme propose d'appliquer aux échantillons (plus de détails sur les enveloppes dans la section \ref{sec:enveloppes}).
+\end{itemize}
+
+Comme demandé par l'énoncé du projet, le code que nous avons écrit utilise exclusivement le paradigme fonctionnel. Aucune entorse n'a été nécessaire pour implémenter des fonctions qui nous semblaient à la fois simple et efficaces. Cependant, notre programme ne présente aucune gestion des erreurs: sans exceptions, celles-ci auraient diminué significativement la clareté de notre implémentation.
+
+\subsection{Fonction \texttt{Interprete}}
+
+Le coeur de la fonction \texttt{Interprete} est la sous-fonction \texttt{InterpreteRecursive}. Celle-ci analyse une partition et produit un vecteur d'échantillons. Son corps n'est rien d'autre qu'un grand \texttt{case} qui traite les suites de partitions (par récursion), les transformations et les notes.
+
+Les paramètres de \texttt{InterpreteRecursive} sont les suivants:
+\begin{itemize}
+    \item \texttt{Score}: une partition à analyser;
+    \item \texttt{Mod}: la composée des transformations à appliquer (voir ci-dessous);
+    \item \texttt{Next}: une liste d'échantillons à ajouter à la fin de la liste produite par \texttt{Score} (détails ci-dessous).
+\end{itemize}
+
+Les transformations sont effectuées par \emph{higher-order programming}: lorsqu'une certaine transformation est traitée par \texttt{InterpreteRecursive}, elle produit une fonction composable à partir des paramètres de la transformation via une fonction \texttt{Make\textit{NomDeLaTransformation}}.
+
+Ensuite, la sous-partition sur laquelle s'applique la transformation est à son tour traitée via \texttt{InterpreteRecursive}; cependant, la fonction composable produite ci-dessus est passée dans l'argument \texttt{Mod} afin de \og{}Diffuser\fg{} la transformation aux sous-partitions. Dans le cas où \texttt{Mod} aurait déjà été définie plus haut, la nouvelle transformation est composée aux précédentes.
+
+Enfin, lorsque \texttt{InterpreteRecursive} en arrive à traiter une note, il la convertit en échantillon et applique sur celui-ci la fonction \texttt{Mod}, c'est-à-dire la composée des transformations.
+
+Afin d'obtenir une liste unique de tous les échantillons produits par des appels récursifs successifs, nous avons recours au paramètre \texttt{Next} de \texttt{InterpreteRecursive}. Voilà comment nous aurions procédé sans: lorsqu'une liste est traitée dans le \texttt{case}, il est nécessaire de faire un appel récursive à la tête de liste, puis à la queue, puis d'utiliser \texttt{Append} sur les deux listes d'échantillons produites afin d'obtenir une unique liste continue ; cela revient à remplacer \texttt{nil} à la fin de la première liste par la seconde liste.
+
+Cependant, étant donné que nous parcourons de toute façon ces listes au moins une fois pour créer les échantillons, plutôt que d'utiliser \texttt{Append} pour les combiner, nous passons, lors de l'appel à \texttt{InterpreteRecursive} sur la tête, un argument \texttt{Next} qui contient la liste d'échantillons produits par l'appel à \texttt{InterpreteRecursive} sur la queue. Ensuite, à l'intérieur de \texttt{InterpreteRecursive}, plutôt que de terminer une liste d'échantillons par \texttt{|nil}, nous la terminons par \texttt{|Next}. Ainsi, les listes sont combinées sans allonger le temps d'exécution par des appels à \texttt{Append}.
+
+\subsection{Fonction Mix}
+
+\subsection{Implémentation des enveloppes}
+
 \section{Limitations}
+
+De loin la plus grande limitation du programme est la lenteure due au code sur lequel nous n'avons pas de contrôle: l'implémentation de Mozart 2.
 
 \section{Complexité}
 
@@ -25,6 +64,7 @@ Comme extensions, nous avons choisi d'ajouter des enveloppes sonores
 aux échantillons, la gestion des instruments, et une composition personnelle.
 
 \subsection{Enveloppes sonores}
+\label{sec:enveloppes}
 Afin de d'éviter des sauts désagréables entre les notes,
 et d'obtenir une qualité sonore plus lisse,
 nous avons décidé d'utiliser des enveloppes sonores,
