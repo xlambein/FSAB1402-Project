@@ -13,11 +13,99 @@
 \end{center}
 
 \section{Structure et Conception}
+\label{sec:struct}
+
 \section{Limitations}
+
 \section{Complexité}
+
 \section{Extensions}
+
 \subsection{Enveloppes}
+Afin de d'éviter des sauts désagréables entre les notes,
+et d'obtenir une qualité sonore plus lisse,
+nous avons décidé d'utiliser des enveloppes sonores,
+qui adoucissent le début et la fin des échantillons.
+
+Dans le code, nous avons défini ces enveloppes comme des fonctions
+qui renvoient un facteur de volume pour chacune des positions
+de l'échantillon.
+Plus de détails sur l'implémentation se trouvent
+dans la section~\ref{sec:struct}.
+
+Nous avons essayé plusieurs types d'enveloppes:
+\begin{itemize}
+    \item \textbf{Enveloppe en trapèze:} cette enveloppe prend deux paramètres:
+        \emph{attack} et \emph{release}.
+        
+        Au début de l'échantillon, le volume va augmenter linéairement
+        pendant un temps \emph{attack} avant d'atteindre son niveau de régime,
+        puis à la fin il va diminuer linéairement pendant un temps
+        \emph{release} jusqu'à un volume nul.
+        
+        Cette enveloppe est simple et permet de se débarasser du bruit de
+        coupure, mais elle est assez peu paramétrable.
+        Elle est implémentée par la fonction \texttt{EnvTrapezoid}.
+    
+    \item \textbf{Enveloppe ADSR:} analogue à la méthode du trapèze,
+        elle accepte les quatre paramètres \emph{attack}, \emph{decay},
+        \emph{sustain} et \emph{release}.
+        
+        Comme pour le trapèze, au début de l'échantillon, le volume augmente
+        linéairement pendant un temps \emph{attack} jusqu'à atteindre un volume
+        maximal. Mais après, le volume décroit de nouveau linéairement,
+        pendant un temps \emph{decay}, avant d'attendre le niveau de régime
+        \emph{sustain}, inférieur au niveau maximal.
+        À la fin, le volume va diminuer en un temps \emph{release} comme pour
+        le trapèze.
+        
+        Cette enveloppe a plus de liberté dans l'attaque initiale, ce qui
+        permet d'imiter avec plus de précision des instruments de musique.
+        Elle est implémentée par la fonction \texttt{EnvADSR}.
+    
+    \item \textbf{Enveloppe en hyperbole:}
+        Cette méthode est notre invention.
+        Nous trouvions que les autres méthodes n'étaient pas assez souples:
+        en effet, pour qu'elles puissent gérer
+        les échantillons courts sans saut,
+        il faut que les paramètres \emph{attack} et \emph{release}
+        soient petits, ce qui implique un son assez dur,
+        même sur les échantillons plus longs.
+        
+        Pour éviter cela, il nous fallait donc une méthode qui s'adapte
+        à la taille de l'échantillon, tout en gardant une dureté équivalente
+        quelle qu'en soit la taille.
+        Nous avons donc décidé de modéliser l'enveloppe comme un produit
+        de deux hyperboles:
+        \begin{itemize}
+            \item l'une croissante,
+                fixée à 0 au début et tendant vers 1 à la fin,
+            \item l'autre décroissante,
+                fixée à 0 à la fin et tendant vers 1 au début.
+        \end{itemize}
+        Elle s'exprime donc comme:
+        \[
+            \mbox{Volume} = \frac{x}{x-\mbox{att}} \times
+                \frac{L-x}{L-x+\mbox{att}}
+        \]
+        où $x$ est la position, $L$ la longueur de l'échantillon et
+        att un temps d'attaque.
+        
+        Le grand avantage de cette enveloppe est que le domaine n'est pas
+        séparé en sous-intervalles, ce qui évite des sauts non-intentionnels.
+        
+        Un effet secondaire de cette méthode a été de diminuer le volume des
+        courts échantillons quand leur longueur est trop proche du paramètre
+        att.
+        Nous avons résolu cela en multipliant l'expression par un facteur
+        qui assure que l'amplitude au milieu de l'échantillon vaille 1.
+        
+        C'est l'enveloppe que nous avons utilisé pour adoucir nos propres sons.
+        Elle est implémentée par la fonction \texttt{EnvHyperbola}.
+\end{itemize}
+
 \subsection{Instruments}
+
 \subsection{Composition}
 
 \end{document}
