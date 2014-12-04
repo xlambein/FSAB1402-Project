@@ -192,5 +192,7 @@ in
     
     % We call the recursive function with the identity transformation and an
     % empty accumulator.
+    {FunBenchmark fun {$}
     {InterpreteRecursive Score fun {$ Sample} Sample end nil}
+    end 'Interprete'}
 end

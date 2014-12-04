@@ -170,20 +170,20 @@ fun {Mix Interprete Music}
         {ApplyCrossFade 0.0 AV1 AV2}
     end
     
-    fun {Cut I StartCut EndCut AV End}
-        if I =< EndCut then
-            if I < 0 then
-                0.|{Cut I+1 StartCut EndCut AV End}
+    fun {Cut Pos StartCut EndCut AV End}
+        if Pos =< EndCut then
+            if Pos < 0.0 then
+                0.0|{Cut Pos+Step StartCut EndCut AV End}
             else
                 case AV
                 of H|T then
-                    if I < StartCut then
-                        0.|{Cut I+1 StartCut EndCut T End}
+                    if Pos < StartCut then
+                        {Cut Pos+Step StartCut EndCut T End}
                     else
-                        H|{Cut I+1 StartCut EndCut T End}
+                        H|{Cut Pos+Step StartCut EndCut T End}
                     end
-                else
-                    0.|{Cut I+1 StartCut EndCut nil End}
+                [] nil then
+                    0.0|{Cut Pos+Step StartCut EndCut nil End}
                 end
             end
         else
@@ -191,14 +191,14 @@ fun {Mix Interprete Music}
         end
     end
     
-    fun {MergeTwo I1 AV1 I2 AV2 End}
+    fun {MergeTwo Int1 AV1 Int2 AV2 End}
         case AV1#AV2
         of (H1|T1)#(H2|T2) then
-            (I1*H1 + I2*H2)|{MergeTwo I1 T1 I2 T2 End}
+            (Int1*H1 + Int2*H2)|{MergeTwo Int1 T1 Int2 T2 End}
         [] (H1|T1)#nil then
-            (I1*H1)|{MergeTwo I1 T1 I2 nil End}
+            (Int1*H1)|{MergeTwo Int1 T1 Int2 nil End}
         [] nil#(H2|T2) then
-            (I2*H2)|{MergeTwo I1 nil I2 T2 End}
+            (Int2*H2)|{MergeTwo Int1 nil Int2 T2 End}
         [] nil#nil then
             End
         end
@@ -206,8 +206,8 @@ fun {Mix Interprete Music}
     
     fun {MergeMusics List End}
         case List
-        of (I#M)|T then
-            {MergeTwo I {MusicToAV M nil} 1.0 {MergeMusics T nil} End}
+        of (Int#M)|T then
+            {MergeTwo Int {MusicToAV M nil} 1.0 {MergeMusics T nil} End}
         else
             nil
         end
@@ -244,8 +244,8 @@ fun {Mix Interprete Music}
             {Fade I O {MusicToAV M nil} End}
         [] fondu_enchaine(duree:D M1 M2) then
             {CrossFade D {MusicToAV M1 nil} {MusicToAV M2 nil} End}
-        [] couper(debut:D fin:F M) then
-            {Cut {Min 0 {ToAVLength D}} {ToAVLength D} {ToAVLength F} {MusicToAV M nil} End}
+        [] couper(debut:S fin:E M) then
+            {Cut {Min 0.0 S} S E {MusicToAV M nil} End}
         end
     end
     
@@ -262,5 +262,7 @@ fun {Mix Interprete Music}
     
 in
     
+    {FunBenchmark fun {$}
     {MusicToAV Music nil}
+    end 'Mix'}
 end
