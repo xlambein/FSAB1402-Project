@@ -50,7 +50,16 @@ Cependant, étant donné que nous parcourons de toute façon ces listes au moins
 
 \subsection{Fonction Mix}
 
+Bien que plus compliquée, la fonction \texttt{Mix} fonctionne sur le même principe que \texttt{Interprete}: il s'agit d'un \texttt{case} sur une musique/liste de morceaux (fonction \texttt{MusicToAV}). Chaque morceau est analysé dans un autre \texttt{case} et traité différemment selon qu'il s'agit d'une voix, d'une partition, d'un fichier wave, d'un merge ou d'un filtre (fonction \texttt{PieceToAV}). De nouveau, la plupart des sous-fonctions de \texttt{Mix} utilisent un paramètre \text{Next}, pour les mêmes raisons que dans \texttt{InterpreteRecursive}.
+
+L'application des filtres, cependant, ne se fait absolument de la même manière que les transformations dans \texttt{InterpreteRecursive}. La raison est qu'un filtre nécessite généralement d'appliquer un traitement sur tout un vecteur audio à la fois, et non pas élément par élément. Nous avons donc une fonction définie pour chaque filtre, à laquelle nous fournissons un vecteur audio se terminant par \texttt{nil} et le vecteur suivant qui doit venir dans la musique (le paramètre \texttt{Next}). Le filtre applique son traitement sur le vecteur tout entier en le parcourant puis retourne un nouveau vecteur audio.
+
+Contrairement aux transformations, les fonctions de filtre sont généralement très différentes les unes des autres, mais elles fonctionnent toutes selon un même squelette: lors d'un appel récursif au filtre effectué sur tout le vecteur, une transformation est appliquée à chaque élément du vecteur. Cette transformation dépend de paramètres déterminés par le vecteur dans son entièreté, ou simplement par les éléments précédents ; c'est la raison pour laquelle les filtres ne fonctionnent pas comme les transformations. Enfin, chaque élement traité est ajouté ajouté à une nouvelle liste, terminant non plus par \texttt{nil} mais par \texttt{Next}.
+
+Pour terminer, abordons la partie plus \og{}physique\fg{} de \texttt{Mix}: la génération d'un vecteur audio à partir d'échantillons (fonction \texttt{SampleToAV}). La fonction agit de trois façons différentes selon que l'échantillon est un silence, une note pure ou une note d'un instrument. Dans le cas d'un silence, la elle génère simplement un vecteur de zéros de la longueur voulue. Dans le cas d'une note pure, une sinusoïde de la fréquence de l'échantillon est produite, puis une enveloppe est appliquée dessus (voir sections \ref {sec:impl_enveloppes} et \ref{sec:enveloppes} pour plus de détails sur les enveloppes). Enfin, si un instrument est donné dans l'échantillon, plutôt que de générer une sinusoïde, le programme utilise le nom de l'instrument et la hauteur de la note pour récupérer le fichier wav correspondant dans \texttt{./wave/instruments/} et le convertir en vecteur audio ; ensuite, le vecteur est tronqué et un fondu en fermeture est appliqué dessus.
+
 \subsection{Implémentation des enveloppes}
+\label{sec:impl_enveloppes}
 
 \section{Limitations}
 
