@@ -1,3 +1,9 @@
+% envelopes.oz
+%
+% Authors: Xavier Lambein (54621300)
+%          Victor Lecomte (65531300)
+% Date: 2014-12-04
+
 % Those functions make envelopes, which for a given position return the
 % corresponding volume factor.
 
