@@ -12,7 +12,7 @@ local
                             silence P2 f#3 P2]))
     Bottom = partition(etirer(facteur:2.4 [g3 f3 d#3 f#3]))
 in
-    fondue(ouverture:0.0 fermeture:1.2
+    fondu(ouverture:0.0 fermeture:1.2
            repetition(nombre:4 merge([0.6#Bottom 0.4#Top])))
 end
 
