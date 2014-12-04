@@ -18,6 +18,7 @@ local Mix Interprete Projet in
 
     local 
         [Music MusicShort] = \insert 'joie.dj.oz'
+        Compo = \insert 'compo.dj.oz'
         Start End
     in
         % Votre code DOIT appeler Projet.run UNE SEULE fois.  Lors de cet appel,
@@ -29,7 +30,7 @@ local Mix Interprete Projet in
         
         Start={Time.time}
         
-        {Browse {Projet.run Mix Interprete partition(Music) 'out.wav'}}
+        %{Browse {Projet.run Mix Interprete partition(Music) 'out.wav'}}
         %{Browse {Projet.run Mix Interprete partition(MusicShort) 'out.wav'}}
         %{Browse {Projet.run Mix Interprete partition([silence a]) 'out.wav'}}
         %{Browse {Interprete bourdon(note:a muet(b))}}
@@ -37,6 +38,8 @@ local Mix Interprete Projet in
         %{Browse {Projet.run Mix Interprete repetition(duree:5.0 partition([a b])) 'out.wav'}}
         %{Browse {Projet.run Mix Interprete merge([0.5#partition(e) 0.5#partition(a)]) 'out.wav'}}
         %{Browse {Projet.run Mix Interprete echo(delai:1.1 decadence:0.3 repetition:3 partition(a)) 'out.wav'}}
+       
+       {Browse {Projet.run Mix Interprete Compo 'compo.wav'}}
         
         End={Time.time}
         

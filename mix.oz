@@ -139,7 +139,7 @@ fun {Mix Interprete Music}
                 Rest = {FiltreFondueFermeture NbEch T NextPos End}
                 Pos = NextPos+1
 
-                if Pos < Duree then
+                if Pos < NbEch then
                     H*({IntToFloat Pos}/{IntToFloat NbEch})|Rest
                 else
                     H|Rest
@@ -222,8 +222,8 @@ fun {Mix Interprete Music}
         [] clip(bas:B haut:H M) then
             {FiltreClip B H {MusiqueToAudio M nil} End}
         [] fondue(ouverture:O fermeture:F M) then
-            {FiltreFondueFermeture F
-            {FiltreFondueOuverture {DureeToNbEch O} {MusiqueToAudio M nil} 0.0 End}
+            {FiltreFondueFermeture {DureeToNbEch F}
+            {FiltreFondueOuverture {DureeToNbEch O} {MusiqueToAudio M nil} 0 End}
             _ End}
         %[] fondue_enchaine(duree:D M1 M2) then
         [] couper(debut:D fin:F M) then
