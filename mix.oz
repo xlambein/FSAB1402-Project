@@ -7,9 +7,13 @@ fun {Mix Interprete Music}
         {FloatToInt Duration*{IntToFloat Projet.hz}}
     end
     
-    fun {SmFactor Pos Dur}
-        Sm = 0.05 in
-        Pos/(Pos+Sm) * (Dur-Pos)/(Dur-Pos+Sm)
+    fun {EnvHyperbola Dur}
+        Ts = 0.05
+        Scaling = ((Dur+2.0*Ts)*(Dur+2.0*Ts)) / (Dur*Dur)
+    in
+        fun {$ Pos}
+            Scaling * Pos/(Pos+Ts) * (Dur-Pos)/(Dur-Pos+Ts)
+        end
     end
     
     fun {SampleToAV Sample End}
@@ -29,9 +33,10 @@ fun {Mix Interprete Music}
             Freq = {Pow 2. {IntToFloat P}/12.}*440.
             Tau = 6.283185307
             Omega = Tau*Freq
+            Envelope = {EnvHyperbola D}
             fun {Sinusoid Pos End}
                 if Pos < D then
-                    0.5*{SmFactor Pos D}*{Sin Omega*Pos}|{Sinusoid Pos+Step End}
+                    0.5*{Envelope Pos}*{Sin Omega*Pos}|{Sinusoid Pos+Step End}
                 else
                     End
                 end
