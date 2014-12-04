@@ -1,7 +1,7 @@
-fun {EnvTrapezoid Dur}
-    Att = 0.03
-    Rel = 0.03
-in
+% Suggestions:
+%   Att = 0.03
+%   Rel = 0.03
+fun {EnvTrapezoid Att Rel Dur}
     fun {$ Pos}
         if Pos < Att then
             Pos/Att
@@ -13,15 +13,15 @@ in
     end
 end
 
-fun {EnvADSR Dur}
-    Att = 0.02
-    Dec = 0.01
-    Sus = 0.8
-    Rel = 0.02
-in
+% Suggestions:
+%   Att = 0.02
+%   Dec = 0.01
+%   Sus = 0.8
+%   Rel = 0.02
+fun {EnvADSR Att Dec Sus Rel Dur}
     fun {$ Pos}
         if Pos < Att then
-            Pos/A
+            Pos/Att
         elseif Pos-Att < Dec then
             1.0 + (Sus-1.0)*(Pos-Att)/Dec
         elseif Dur-Pos < Rel then
@@ -31,9 +31,10 @@ in
         end
     end
 end
-
-fun {EnvHyperbola Dur}
-    Att = 0.05
+% Suggestion:
+%   soft: Att = 0.05
+%   hard: Att = 0.02
+fun {EnvHyperbola Att Dur}
     Scaling = ((Dur+2.0*Att)*(Dur+2.0*Att)) / (Dur*Dur)
 in
     fun {$ Pos}

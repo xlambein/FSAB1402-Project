@@ -35,9 +35,9 @@ local Mix Interprete Projet ProcBenchmark FunBenchmark in
     end
 
     local 
-        [Joie JoieShort] = \insert 'joie.dj.oz'
-        Soupe = \insert 'soupe.dj.oz'
-        Compo = \insert 'compo.dj.oz'
+        %[Joie JoieShort] = \insert 'joie.dj.oz'
+        %Soupe = \insert 'soupe.dj.oz'
+        %Compo = \insert 'compo.dj.oz'
         Zelda = \insert 'zelda.dj.oz'
     in
         % Votre code DOIT appeler Projet.run UNE SEULE fois.  Lors de cet appel,
@@ -68,7 +68,7 @@ local Mix Interprete Projet ProcBenchmark FunBenchmark in
         %{Browse {Projet.run Mix Interprete fondu(ouverture:2.0 fermeture:2.0 partition(Soupe)) 'out.wav'}}
         %{Browse {Projet.run Mix Interprete fondu_enchaine(duree:2.0 partition(Joie) partition(Soupe)) 'out.wav'}}
         %{Browse {Projet.run Mix Interprete couper(debut:~2.0 fin:6.0 partition(Soupe)) 'out.wav'}}
-	    %{Browse {Projet.run Mix Interprete partition(instrument(nom:'bassdist' [c3 c#3 d3 d#3 e3 f3 f#3 g3 instrument(nom:'woody' [g#3 a3 a#3 b3]) c c#4 d d#4 e f f#4 g g#4 a a#4 b])) 'out.wav'}}
+	    %{Browse {Projet.run Mix Interprete partition(etirer(facteur:0.15 instrument(nom:'8bit_stab' [c3 c#3 d3 d#3 e3 f3 f#3 g3 instrument(nom:'woody' [g#3 a3 a#3 b3]) c c#4 d d#4 e f f#4 g g#4 a a#4 b]))) 'out.wav'}}
         
         end 'Projet.run'}
     end

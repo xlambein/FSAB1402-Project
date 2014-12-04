@@ -39,7 +39,6 @@ fun {Mix Interprete Music}
     fun {PitchToNote Pitch}
         Octave
         InOctave
-        Note
         fun {NoteLetter InOctave}
             case InOctave
             of 0 then 'c'
@@ -83,8 +82,23 @@ fun {Mix Interprete Music}
         end
     end
     
-    fun {InstrumentToVA Instrument Pitch}
+    fun {InstrumentToAV Instrument Pitch}
         {Projet.readFile {VirtualString.toAtom InstrumentsDir#Instrument#'_'#{PitchToNote Pitch}#'.wav'}}
+    end
+    
+    fun {SinusoidToAV Pitch Dur Envelope End}
+        Freq = {Pow 2. {IntToFloat Pitch}/12.}*440.
+        Tau = 6.283185307
+        Omega = Tau*Freq
+        fun {ApplySine Pos}
+            if Pos < Dur then
+                0.5*{Envelope Pos}*{Sin Omega*Pos}|{ApplySine Pos+Step}
+            else
+                End
+            end
+        end
+    in
+        {ApplySine 0.0}
     end
     
     fun {SampleToAV Sample End}
@@ -100,25 +114,31 @@ fun {Mix Interprete Music}
         in
             {Zeros 0.0 End}
         
-        [] echantillon(hauteur:P duree:D instrument:none) then
-            Freq = {Pow 2. {IntToFloat P}/12.}*440.
-            Tau = 6.283185307
-            Omega = Tau*Freq
-            Envelope = {EnvTrapezoid D}
-            fun {Sinusoid Pos End}
-                if Pos < D then
-                    0.5*{Envelope Pos}*{Sin Omega*Pos}|{Sinusoid Pos+Step End}
-                else
-                    End
+        [] echantillon(hauteur:P duree:Dur instrument:I) then
+            case I
+            of none then
+                {SinusoidToAV P Dur {EnvADSR 0.03 0.01 0.8 0.03 Dur} End}
+            [] trapezoid(att:A rel:R) then
+                {SinusoidToAV P Dur {EnvTrapezoid A R Dur} End}
+            [] adsr(att:A dec:D sus:S rel:R) then
+                {SinusoidToAV P Dur {EnvADSR A D S R Dur} End}
+            [] hyperbola(att:A) then
+                {SinusoidToAV P Dur {EnvHyperbola A Dur} End}
+            else
+                RawAV = {InstrumentToAV I P}
+                Env = {EnvTrapezoid 0.0 0.03 Dur}
+                fun {ApplyEnv Pos AV}
+                    case AV
+                    of H|T then
+                        H*{Env Pos}|{ApplyEnv Pos+Step T}
+                    else
+                        End
+                    end
                 end
+            in
+                {ApplyEnv 0.0 {Cut 0.0 0.0 Dur RawAV nil}}
+                %[0.0]
             end
-        in
-            {Sinusoid 0.0 End}
-            
-        [] echantillon(hauteur:P duree:D instrument:I) then
-            AV = {InstrumentToVA I P}
-        in
-            {Cut 0.0 0.0 D AV End}
         end
     end
     
