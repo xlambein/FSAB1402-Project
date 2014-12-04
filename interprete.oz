@@ -1,3 +1,9 @@
+% interprete.oz
+%
+% Authors: Xavier Lambein (54621300)
+%          Victor Lecomte (65531300)
+% Date: 2014-12-04
+
 % Transforms a score into a list of samples (a voice)
 fun {Interprete Score}
     

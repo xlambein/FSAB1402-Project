@@ -1,17 +1,11 @@
-% Vous ne pouvez pas utiliser le mot-clé 'declare'.
+% code.oz
+%
+% Authors: Xavier Lambein (54621300)
+%          Victor Lecomte (65531300)
+% Date: 2014-12-04
+
 local Mix Interprete Projet ProcBenchmark FunBenchmark in
     [Projet] = {Link ['Projet2014_mozart2.ozf']}
-    % Si vous utilisez Mozart 1.4, remplacez la ligne précédente par celle-ci :
-    % [Projet] = {Link ['Projet2014_mozart1.4.ozf']}
-    %
-    % Projet fournit quatre fonctions :
-    % {Projet.run Interprete Mix Music 'out.wav'} = ok OR error(...) 
-    % {Projet.readFile FileName} = audioVector(AudioVector) OR error(...)
-    % {Projet.writeFile FileName AudioVector} = ok OR error(...)
-    % {Projet.load 'music_file.oz'} = Oz structure.
-    %
-    % et une constante :
-    % Projet.hz = 44100, la fréquence d'échantilonnage (nombre de données par seconde)
 
     \insert 'mix.oz'
     \insert 'interprete.oz'
@@ -35,25 +29,13 @@ local Mix Interprete Projet ProcBenchmark FunBenchmark in
     end
 
     local 
-        %[Joie JoieShort] = \insert 'joie.dj.oz'
-        %Soupe = \insert 'soupe.dj.oz'
-        %Compo = \insert 'compo.dj.oz'
         Zelda = \insert 'zelda.dj.oz'
     in
-        % Votre code DOIT appeler Projet.run UNE SEULE fois.  Lors de cet appel,
-        % vous devez mixer une musique qui démontre les fonctionalités de votre
-        % programme.
-        %
-        % Si votre code devait ne pas passer nos tests, cet exemple serait le
-        % seul qui ateste de la validité de votre implémentation.
-        
         {ProcBenchmark proc {$}
         
-        %{Browse {Projet.run Mix Interprete partition(Joie) 'out.wav'}}
-        %{Browse {Projet.run Mix Interprete partition(JoieShort) 'out.wav'}}
-        %{Browse {Projet.run Mix Interprete partition(Soupe) 'out.wav'}}
-        %{Browse {Projet.run Mix Interprete Compo 'compo.wav'}}
         {Browse {Projet.run Mix Interprete Zelda 'out.wav'}}
+        
+        % Code samples for testing:
         
         %{Browse {Projet.run Mix Interprete partition([silence a]) 'out.wav'}}
         %{Browse {Interprete bourdon(note:a muet(b))}}

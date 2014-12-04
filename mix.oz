@@ -1,3 +1,9 @@
+% mix.oz
+%
+% Authors: Xavier Lambein (54621300)
+%          Victor Lecomte (65531300)
+% Date: 2014-12-04
+
 % Mix takes a score interpreter and a music as an argument, and returns an
 % audio vector.
 fun {Mix Interprete Music}
