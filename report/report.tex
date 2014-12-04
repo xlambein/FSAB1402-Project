@@ -46,7 +46,7 @@ Enfin, lorsque \texttt{InterpreteRecursive} en arrive à traiter une note, il la
 
 Afin d'obtenir une liste unique de tous les échantillons produits par des appels récursifs successifs, nous avons recours au paramètre \texttt{Next} de \texttt{InterpreteRecursive}. Voilà comment nous aurions procédé sans: lorsqu'une liste est traitée dans le \texttt{case}, il est nécessaire de faire un appel récursive à la tête de liste, puis à la queue, puis d'utiliser \texttt{Append} sur les deux listes d'échantillons produites afin d'obtenir une unique liste continue ; cela revient à remplacer \texttt{nil} à la fin de la première liste par la seconde liste.
 
-Cependant, étant donné que nous parcourons de toute façon ces listes au moins une fois pour créer les échantillons, plutôt que d'utiliser \texttt{Append} pour les combiner, nous passons, lors de l'appel à \texttt{InterpreteRecursive} sur la tête, un argument \texttt{Next} qui contient la liste d'échantillons produits par l'appel à \texttt{InterpreteRecursive} sur la queue. Ensuite, à l'intérieur de \texttt{InterpreteRecursive}, plutôt que de terminer une liste d'échantillons par \texttt{|nil}, nous la terminons par \texttt{|Next}. Ainsi, les listes sont combinées sans allonger le temps d'exécution par des appels à \texttt{Append}.
+Cependant, étant donné que nous parcourons de toute façon ces listes au moins une fois pour créer les échantillons, plutôt que d'utiliser \texttt{Append} pour les combiner, nous passons, lors de l'appel à \texttt{InterpreteRecursive} sur la tête, un argument \texttt{Next} qui contient la liste d'échantillons produits par l'appel à \texttt{InterpreteRecursive} sur la queue. Ensuite, à l'intérieur de \texttt{InterpreteRecursive}, plutôt que de terminer une liste d'échantillons par \texttt{|nil}, nous la terminons par \texttt{|Next}. Ainsi, les listes sont combinées sans allonger le temps d'exécution par des appels à \texttt{Append}. Cette astuce nous permet de garder une complexité linéaire.
 
 \subsection{Fonction Mix}
 \label{sec:mix}
@@ -64,7 +64,14 @@ Pour terminer, abordons la partie plus \og{}physique\fg{} de \texttt{Mix}: la g�
 
 \section{Limitations}
 
-De loin la plus grande limitation du programme est la lenteure due au code sur lequel nous n'avons pas de contrôle: l'implémentation de Mozart 2.
+Lors de l'implémentation du projet, trois limitations nous sont rapidement apparues: le format des partitions, la lenteur et le manque de robustesse.
+
+Le premier obstacle rencontré lors de l'écriture d'une musique pour le projet est le format dans lequel les partitions sont écrites: trop verbeux et pas assez proche de la façon dont on écrit de la musique, il demande de consacrer beaucoup de temps à écrire et à réorganiser le code de la partition au moindre ajout ou changement, ce qui impacte fortement la créativité du compositeur en herbe. Une manière de résoudre ce problème aurait été d'implémenter une syntaxe alternative pour l'écriture des partitions (par exemple inspirée de LilyPond\footnotemark), mais le temps nous a manqué.
+\footnotetext{\url{http://www.lilypond.org/index.fr.html}}
+
+Ensuite, et il s'agit sans doute du plus grand obstacle, le programme, à cause de Mozart 2, est incroyablement lent: une musique de quelques notes prends plusieurs dizaines de secondes à \og{}compiler\fg{}.
+
+Enfin, le dernier point n'est pas un obstacle à l'utilisateur mais est néanmoins très important: notre programme ne présente aucune gestion des erreurs. Un \emph{input} erronné n'est donc jamais susceptible de produire un message d'erreur clair et adapté au problème; au lieu de cela, seul les erreurs de Oz sont affichées et, souvent, elles n'offrent que peu d'indications quant à l'origine du problème. Cet aspect aurait pu être adressé en utilisant des exceptions, au prix d'obtenir un code qui ne respecte plus totalement le paradigme fonctionnel.
 
 \section{Complexité}
 
