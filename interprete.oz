@@ -12,6 +12,7 @@ fun {Interprete Score}
     MakeMute
     MakeConstant
     MakeTranspose
+    MakeChangeInstrument
     
     % Interpretation
     Compose
@@ -145,6 +146,19 @@ in
         end
     end
     
+    % Makes a function that changes a sample's instrument from none to Name.
+    fun {MakeChangeInstrument Name}
+        fun {$ Sample}
+            case Sample
+            % Only if it is a sample with instrument none we change it.
+            of echantillon(hauteur:P duree:D instrument:none) then
+                echantillon(hauteur:P duree:D instrument:Name)
+            else
+                Sample
+            end
+        end
+    end
+    
     
     % Transformation composition.
     fun {Compose F1 F2}
@@ -178,6 +192,8 @@ in
             {InterpreteRecursive S {Compose Mod {MakeConstant N}} Next}
         [] transpose(demitons:St S) then
             {InterpreteRecursive S {Compose Mod {MakeTranspose St}} Next}
+        [] instrument(nom:N S) then
+            {InterpreteRecursive S {Compose Mod {MakeChangeInstrument N}} Next}
         
         % If it is a note, we create the right 1-second sample, we apply the
         % transformations, and we add it to the list.
