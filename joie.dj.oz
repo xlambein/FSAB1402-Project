@@ -9,7 +9,7 @@ local
                     b g a etirer(facteur:0.5 [b c5])
                 b a g a etirer(facteur:2.0 d) ]
 in
-   [etirer(facteur:0.5 [Tune End1 Tune End2 Interlude Tune End2])
-    etirer(facteur:0.5 [Tune End1])]
+   [etirer(facteur:0.4 [Tune End1 Tune End2 Interlude Tune End2])
+    etirer(facteur:0.4 [Tune End1])]
 end
 

@@ -17,7 +17,7 @@ local Mix Interprete Projet in
     \insert 'interprete.oz'
 
     local 
-        %[Joie JoieShort] = \insert 'joie.dj.oz'
+        [Joie JoieShort] = \insert 'joie.dj.oz'
         Soupe = \insert 'soupe.dj.oz'
         Start End
     in
@@ -32,16 +32,18 @@ local Mix Interprete Projet in
         
         %{Browse {Projet.run Mix Interprete partition(Joie) 'out.wav'}}
         %{Browse {Projet.run Mix Interprete partition(JoieShort) 'out.wav'}}
-        {Browse {Projet.run Mix Interprete partition(Soupe) 'out.wav'}}
+        %{Browse {Projet.run Mix Interprete partition(Soupe) 'out.wav'}}
         
         %{Browse {Projet.run Mix Interprete partition([silence a]) 'out.wav'}}
         %{Browse {Interprete bourdon(note:a muet(b))}}
+        %{Browse {Projet.run Mix Interprete renverser(partition(Soupe)) 'out.wav'}}
         %{Browse {Projet.run Mix Interprete repetition(nombre:3 partition([a b])) 'out.wav'}}
         %{Browse {Projet.run Mix Interprete repetition(duree:5.0 partition([a b])) 'out.wav'}}
+        %{Browse {Projet.run Mix Interprete clip(bas:~0.1 haut:0.1 partition(Soupe)) 'out.wav'}}
         %{Browse {Projet.run Mix Interprete merge([0.5#partition(e) 0.5#partition(a)]) 'out.wav'}}
         %{Browse {Projet.run Mix Interprete echo(delai:1.1 decadence:0.3 repetition:3 partition(a)) 'out.wav'}}
         %{Browse {Projet.run Mix Interprete fondu(ouverture:2.0 fermeture:2.0 partition(Soupe)) 'out.wav'}}
-        %{Browse {Projet.run Mix Interprete clip(bas:~0.1 haut:0.1 partition(Soupe)) 'out.wav'}}
+        {Browse {Projet.run Mix Interprete fondu_enchaine(duree:2.0 partition(Joie) partition(Soupe)) 'out.wav'}}
         
         End={Time.time}
         

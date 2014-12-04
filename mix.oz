@@ -4,17 +4,14 @@ fun {Mix Interprete Music}
     Step = 1.0 / {IntToFloat Projet.hz}
     
     fun {ToAVLength Duration}
-        {FloatToInt Duration*{IntToFloat Projet.hz}}
+        {FloatToInt Duration / Step}
     end
     
-    fun {EnvHyperbola Dur}
-        Ts = 0.05
-        Scaling = ((Dur+2.0*Ts)*(Dur+2.0*Ts)) / (Dur*Dur)
-    in
-        fun {$ Pos}
-            Scaling * Pos/(Pos+Ts) * (Dur-Pos)/(Dur-Pos+Ts)
-        end
+    fun {ToDuration AVLength}
+        {IntToFloat AVLength} * Step
     end
+    
+    \insert 'envelopes.oz'
     
     fun {SampleToAV Sample End}
         case Sample
@@ -33,7 +30,7 @@ fun {Mix Interprete Music}
             Freq = {Pow 2. {IntToFloat P}/12.}*440.
             Tau = 6.283185307
             Omega = Tau*Freq
-            Envelope = {EnvHyperbola D}
+            Envelope = {EnvTrapezoid D}
             fun {Sinusoid Pos End}
                 if Pos < D then
                     0.5*{Envelope Pos}*{Sin Omega*Pos}|{Sinusoid Pos+Step End}
@@ -123,7 +120,7 @@ fun {Mix Interprete Music}
     
     fun {Fade InDur OutDur AV End}
         
-        Dur = {IntToFloat {Length AV}} * Step
+        Dur = {ToDuration {Length AV}}
         fun {ApplyFade Pos AV}
             case AV
             of H|T then
@@ -143,6 +140,34 @@ fun {Mix Interprete Music}
         end
     in
         {ApplyFade 0.0 AV}
+    end
+    
+    fun {CrossFade CrossDur AV1 AV2 End}
+        
+        FirstDur = {IntToFloat {Length AV1}} * Step
+        fun {ApplyCrossFade Pos AV1 AV2}
+            case AV1
+            of H1|T1 then
+                if Pos < FirstDur-CrossDur then
+                    H1|{ApplyCrossFade Pos+Step T1 AV2}
+                else
+                    H2|T2 = AV2
+                    Gain1 = (FirstDur-Pos)/CrossDur
+                    H = H1*Gain1 + H2*(1.0-Gain1)
+                in
+                    H|{ApplyCrossFade Pos+Step T1 T2}
+                end
+            [] nil then
+                case AV2
+                of H2|T2 then
+                    H2|{ApplyCrossFade Pos+Step nil T2}
+                [] nil then
+                    End
+                end
+            end
+        end
+    in
+        {ApplyCrossFade 0.0 AV1 AV2}
     end
     
     fun {Cut I StartCut EndCut AV End}
@@ -217,7 +242,8 @@ fun {Mix Interprete Music}
             {Clip L H {MusicToAV M nil} End}
         [] fondu(ouverture:I fermeture:O M) then
             {Fade I O {MusicToAV M nil} End}
-        %[] fondue_enchaine(duree:D M1 M2) then
+        [] fondu_enchaine(duree:D M1 M2) then
+            {CrossFade D {MusicToAV M1 nil} {MusicToAV M2 nil} End}
         [] couper(debut:D fin:F M) then
             {Cut {Min 0 {ToAVLength D}} {ToAVLength D} {ToAVLength F} {MusicToAV M nil} End}
         end
