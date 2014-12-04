@@ -55,11 +55,12 @@ Enfin, lorsque \texttt{InterpreteRecursive} en arrive à traiter une note, il la
 
 Afin d'obtenir une liste unique de tous les échantillons produits par des appels récursifs successifs, nous avons recours au paramètre \texttt{Next} de \texttt{InterpreteRecursive}. Voilà comment nous aurions procédé sans: lorsqu'une liste est traitée dans le \texttt{case}, il est nécessaire de faire un appel récursive à la tête de liste, puis à la queue, puis d'utiliser \texttt{Append} sur les deux listes d'échantillons produites afin d'obtenir une unique liste continue ; cela revient à remplacer \texttt{nil} à la fin de la première liste par la seconde liste.
 
-Cependant, étant donné que nous parcourons de toute façon ces listes au moins une fois pour créer les échantillons, plutôt que d'utiliser \texttt{Append} pour les combiner, nous passons, lors de l'appel à \texttt{InterpreteRecursive} sur la tête, un argument \texttt{Next} qui contient la liste d'échantillons produits par l'appel à \texttt{InterpreteRecursive} sur la queue. Ensuite, à l'intérieur de \texttt{InterpreteRecursive}, plutôt que de terminer une liste d'échantillons par \texttt{|nil}, nous la terminons par \texttt{|Next}. Ainsi, les listes sont combinées sans allonger le temps d'exécution par des appels à \texttt{Append}.
+Cependant, étant donné que nous parcourons de toute façon ces listes au moins une fois pour créer les échantillons, plutôt que d'utiliser \texttt{Append} pour les combiner, nous passons, lors de l'appel à \texttt{InterpreteRecursive} sur la tête, un argument \texttt{Next} qui contient la liste d'échantillons produits par l'appel à \texttt{InterpreteRecursive} sur la queue. Ensuite, à l'intérieur de \texttt{InterpreteRecursive}, plutôt que de terminer une liste d'échantillons par \texttt{|nil}, nous la terminons par \texttt{|Next}. Ainsi, les listes sont combinées sans allonger le temps d'exécution par des appels à \texttt{Append}. Cette astuce nous permet de garder une complexité linéaire.
 
 \subsection{Fonction Mix}
+\label{sec:mix}
 
-Bien que plus compliquée, la fonction \texttt{Mix} fonctionne sur le même principe que \texttt{Interprete}: il s'agit d'un \texttt{case} sur une musique/liste de morceaux (fonction \texttt{MusicToAV}). Chaque morceau est analysé dans un autre \texttt{case} et traité différemment selon qu'il s'agit d'une voix, d'une partition, d'un fichier wave, d'un merge ou d'un filtre (fonction \texttt{PieceToAV}). De nouveau, la plupart des sous-fonctions de \texttt{Mix} utilisent un paramètre \text{Next}, pour les mêmes raisons que dans \texttt{InterpreteRecursive}.
+Bien que plus compliquée, la fonction \texttt{Mix} fonctionne sur le même principe que \texttt{Interprete}: il s'agit d'un \texttt{case} sur une musique/liste de morceaux (fonction \texttt{MusicToAV}). Chaque morceau est analysé dans un autre \texttt{case} et traité différemment selon qu'il s'agit d'une voix, d'une partition, d'un fichier wave, d'un merge ou d'un filtre (fonction \texttt{PieceToAV}). De nouveau, la plupart des sous-fonctions de \texttt{Mix} utilisent un paramètre \texttt{Next}, pour les mêmes raisons que dans \texttt{InterpreteRecursive}.
 
 L'application des filtres, cependant, ne se fait absolument de la même manière que les transformations dans \texttt{InterpreteRecursive}. La raison est qu'un filtre nécessite généralement d'appliquer un traitement sur tout un vecteur audio à la fois, et non pas élément par élément. Nous avons donc une fonction définie pour chaque filtre, à laquelle nous fournissons un vecteur audio se terminant par \texttt{nil} et le vecteur suivant qui doit venir dans la musique (le paramètre \texttt{Next}). Le filtre applique son traitement sur le vecteur tout entier en le parcourant puis retourne un nouveau vecteur audio.
 
@@ -163,11 +164,20 @@ in
         filtre sur ses éléments, ce que fait la sous-fonction \texttt{ApplyEnv}.
 \end{itemize}
 
+\subsection{Complexité}
+
+Notre code ne présente jamais de boucles imbriquées sur des listes d'échantillons ou de vecteurs audio, et ce notamment grâce à l'usage de \texttt{Next}. Nous avons donc une complexité linéaire. 
+
 \section{Limitations}
 
-De loin la plus grande limitation du programme est la lenteure due au code sur lequel nous n'avons pas de contrôle: l'implémentation de Mozart 2.
+Lors de l'implémentation du projet, trois limitations nous sont rapidement apparues: le format des partitions, la lenteur et le manque de robustesse.
 
-\section{Complexité}
+Le premier obstacle rencontré lors de l'écriture d'une musique pour le projet est le format dans lequel les partitions sont écrites: trop verbeux et pas assez proche de la façon dont on écrit de la musique, il demande de consacrer beaucoup de temps à écrire et à réorganiser le code de la partition au moindre ajout ou changement, ce qui impacte fortement la créativité du compositeur en herbe. Une manière de résoudre ce problème aurait été d'implémenter une syntaxe alternative pour l'écriture des partitions (par exemple inspirée de LilyPond\footnotemark), mais le temps nous a manqué.
+\footnotetext{\url{http://www.lilypond.org/index.fr.html}}
+
+Ensuite, et il s'agit sans doute du plus grand obstacle, le programme, à cause de Mozart 2, est incroyablement lent: une musique de quelques notes prends plusieurs dizaines de secondes à \og{}compiler\fg{}.
+
+Enfin, le dernier point n'est pas un obstacle à l'utilisateur mais est néanmoins très important: notre programme ne présente aucune gestion des erreurs. Un \emph{input} erronné n'est donc jamais susceptible de produire un message d'erreur clair et adapté au problème; au lieu de cela, seul les erreurs de Oz sont affichées et, souvent, elles n'offrent que peu d'indications quant à l'origine du problème. Cet aspect aurait pu être adressé en utilisant des exceptions, au prix d'obtenir un code qui ne respecte plus totalement le paradigme fonctionnel.
 
 \section{Extensions}
 
@@ -260,6 +270,25 @@ Nous avons essayé plusieurs types d'enveloppes:
 
 \subsection{Instruments}
 
+L'usage d'instruments externes permet d'obtenir facilement des sons intéressants qu'il aurait été compliqué de générer avec de simples sinusoïdes. Ils apportent une diversité de la plus haute importance à toute composition en MAO\footnote{Musique Assistée par Ordinateur} qui se respecte.
+
+La gestion des instruments est effectuée exactement telle que spécifée dans l'énoncé du projet, c'est-à-dire dans le champ \texttt{instrument} des échantillons. Pour appliquer un instrument à une série de notes, on utilise \texttt{instrument(nom:$\left<instrument\right>$ $\left<partition\right>$)}. Les fichiers correspondant aux notes sont alors cherchés dans le dossier \texttt{./wave/instruments/}, sous le nom \texttt{\textit{instrument}\_\textit{note}.wav}, avec \texttt{\textit{note}} sous la forme \texttt{a4} ou \texttt{a4\#} selon qu'elle présente une alteration ou non.
+
+Des détails supplémentaires sur l'implémentation des instruments sont donnés dans la section \ref{sec:mix}.
+
 \subsection{Composition}
 
 \end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
