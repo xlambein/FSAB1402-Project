@@ -38,7 +38,7 @@ local Mix Interprete Projet ProcBenchmark FunBenchmark in
         %[Joie JoieShort] = \insert 'joie.dj.oz'
         %Soupe = \insert 'soupe.dj.oz'
         %Compo = \insert 'compo.dj.oz'
-        Zelda = \insert 'zelda.dj.oz'
+        Zelda = \insert 'exemple.dj.oz'
     in
         % Votre code DOIT appeler Projet.run UNE SEULE fois.  Lors de cet appel,
         % vous devez mixer une musique qui démontre les fonctionalités de votre

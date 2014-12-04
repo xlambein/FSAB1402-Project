@@ -20,7 +20,6 @@ local
         g3 d3 g2 d3
         f3 c3 f2 c3
         d#3 a#2 d#2 a#2
-        %a#2 f3 a#3 f3
         f3 a#2 f2 a#2
         g#3 d#3 g#2 d#3
         g3 d3 g2 d3
