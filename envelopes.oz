@@ -1,3 +1,7 @@
+% Those functions make envelopes, which for a given position return the
+% corresponding volume factor.
+
+% Makes a trapezoidal envelope with given parameters and duration.
 % Suggestions:
 %   Att = 0.03
 %   Rel = 0.03
@@ -13,6 +17,7 @@ fun {EnvTrapezoid Att Rel Dur}
     end
 end
 
+% Makes an ADSR envelope with given parameters and duration.
 % Suggestions:
 %   Att = 0.02
 %   Dec = 0.01
@@ -31,9 +36,11 @@ fun {EnvADSR Att Dec Sus Rel Dur}
         end
     end
 end
-% Suggestion:
-%   soft: Att = 0.05
-%   hard: Att = 0.02
+
+% Makes a hyperbolic envelope with the given parameter and duration.
+% Suggestions:
+%   soft: Att = 0.03
+%   hard: Att = 0.01
 fun {EnvHyperbola Att Dur}
     Scaling = ((Dur+2.0*Att)*(Dur+2.0*Att)) / (Dur*Dur)
 in
