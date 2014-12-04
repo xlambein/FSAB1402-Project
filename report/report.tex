@@ -49,8 +49,9 @@ Afin d'obtenir une liste unique de tous les échantillons produits par des appel
 Cependant, étant donné que nous parcourons de toute façon ces listes au moins une fois pour créer les échantillons, plutôt que d'utiliser \texttt{Append} pour les combiner, nous passons, lors de l'appel à \texttt{InterpreteRecursive} sur la tête, un argument \texttt{Next} qui contient la liste d'échantillons produits par l'appel à \texttt{InterpreteRecursive} sur la queue. Ensuite, à l'intérieur de \texttt{InterpreteRecursive}, plutôt que de terminer une liste d'échantillons par \texttt{|nil}, nous la terminons par \texttt{|Next}. Ainsi, les listes sont combinées sans allonger le temps d'exécution par des appels à \texttt{Append}.
 
 \subsection{Fonction Mix}
+\label{sec:mix}
 
-Bien que plus compliquée, la fonction \texttt{Mix} fonctionne sur le même principe que \texttt{Interprete}: il s'agit d'un \texttt{case} sur une musique/liste de morceaux (fonction \texttt{MusicToAV}). Chaque morceau est analysé dans un autre \texttt{case} et traité différemment selon qu'il s'agit d'une voix, d'une partition, d'un fichier wave, d'un merge ou d'un filtre (fonction \texttt{PieceToAV}). De nouveau, la plupart des sous-fonctions de \texttt{Mix} utilisent un paramètre \text{Next}, pour les mêmes raisons que dans \texttt{InterpreteRecursive}.
+Bien que plus compliquée, la fonction \texttt{Mix} fonctionne sur le même principe que \texttt{Interprete}: il s'agit d'un \texttt{case} sur une musique/liste de morceaux (fonction \texttt{MusicToAV}). Chaque morceau est analysé dans un autre \texttt{case} et traité différemment selon qu'il s'agit d'une voix, d'une partition, d'un fichier wave, d'un merge ou d'un filtre (fonction \texttt{PieceToAV}). De nouveau, la plupart des sous-fonctions de \texttt{Mix} utilisent un paramètre \texttt{Next}, pour les mêmes raisons que dans \texttt{InterpreteRecursive}.
 
 L'application des filtres, cependant, ne se fait absolument de la même manière que les transformations dans \texttt{InterpreteRecursive}. La raison est qu'un filtre nécessite généralement d'appliquer un traitement sur tout un vecteur audio à la fois, et non pas élément par élément. Nous avons donc une fonction définie pour chaque filtre, à laquelle nous fournissons un vecteur audio se terminant par \texttt{nil} et le vecteur suivant qui doit venir dans la musique (le paramètre \texttt{Next}). Le filtre applique son traitement sur le vecteur tout entier en le parcourant puis retourne un nouveau vecteur audio.
 
@@ -158,6 +159,25 @@ Nous avons essayé plusieurs types d'enveloppes:
 
 \subsection{Instruments}
 
+L'usage d'instruments externes permet d'obtenir facilement des sons intéressants qu'il aurait été compliqué de générer avec de simples sinusoïdes. Ils apportent une diversité de la plus haute importance à toute composition en MAO\footnote{Musique Assistée par Ordinateur} qui se respecte.
+
+La gestion des instruments est effectuée exactement telle que spécifée dans l'énoncé du projet, c'est-à-dire dans le champ \texttt{instrument} des échantillons. Pour appliquer un instrument à une série de notes, on utilise \texttt{instrument(nom:$\left<instrument\right>$ $\left<partition\right>$)}. Les fichiers correspondant aux notes sont alors cherchés dans le dossier \texttt{./wave/instruments/}, sous le nom \texttt{\textit{instrument}\_\textit{note}.wav}, avec \texttt{\textit{note}} sous la forme \texttt{a4} ou \texttt{a4\#} selon qu'elle présente une alteration ou non.
+
+Des détails supplémentaires sur l'implémentation des instruments sont donnés dans la section \ref{sec:mix}.
+
 \subsection{Composition}
 
 \end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
