@@ -2,6 +2,15 @@
 
 \usepackage{mystyle}
 
+\lstset{
+    language=Oz,
+    basicstyle=\footnotesize,
+    %title=\lstname,
+    frame=single,
+    numbers=left,
+    breaklines=true,
+}
+
 \begin{document}
 
 \begin{center}
@@ -60,6 +69,99 @@ Pour terminer, abordons la partie plus \og{}physique\fg{} de \texttt{Mix}: la g�
 
 \subsection{Implémentation des enveloppes}
 \label{sec:impl_enveloppes}
+
+Dans notre programme, nous utilisons des enveloppes sonores pour ajuster
+le volume des échantillons au début et à la fin de ceux-ci.
+Nous avons donc défini les enveloppes comme des fonctions qui prennent
+une position dans l'échantillon et renvoie un facteur par lequel il faut
+multiplier l'intensité sonore.
+
+Puisque les enveloppes ainsi définies ont besoin de plus d'informations que ce
+qui leur est donné en paramètre, nous avons utilisé leur environnement
+contextuel pour mémoriser leurs paramètres, la durée de l'échantillon concerné,
+et pour le cas de l'enveloppe hyperbolique (voir section~\ref{sec:enveloppes}),
+un facteur adaptatif calculé à partir de la durée et de l'attaque.
+
+Prenons l'exemple de l'enveloppe trapézoïdale:
+\begin{lstlisting}
+fun {EnvTrapezoid Att Rel Dur}
+    fun {$ Pos}
+        if Pos < Att then
+            Pos/Att
+        elseif Dur-Pos < Rel then
+            (Dur-Pos)/Rel
+        else
+            1.0
+        end
+    end
+end
+\end{lstlisting}
+
+La fonction \texttt{EnvTrapezoid} renvoie une enveloppe:
+une fonction qui pour une position donne un facteur de volume
+(en forme de trapèze).
+Même si elle a besoin de connaître l'attaque \texttt{Att} et la durée
+\texttt{Dur} de l'échantillon, ces données ne sont pas des arguments de la
+fonction.
+
+Cette fabrique de fonctions et les deux autres se trouvent dans le fichier
+\texttt{envelope.oz}.
+
+Nous utilisons les enveloppes ainsi générées dans deux contextes:
+\begin{itemize}
+    \item \textbf{Générateur de sinusoïdes:}
+        la fonction \texttt{SinusoidToAV} prend en paramètre (en plus de la
+        hauteur et la durée) une enveloppe, qu'il applique à la sinusoïde
+        qu'elle génère. Cette enveloppe est choisie dans \texttt{SampleToAV},
+        selon l'instrument entré:
+\begin{lstlisting}
+% Default instrument is a sinusoid with ADSR envelope.
+of none then
+    {SinusoidToAV P Dur {EnvADSR 0.03 0.01 0.8 0.03 Dur} Next}
+
+% If the instrument only specifies the envelope to use.
+[] trapezoid(att:A rel:R) then
+    {SinusoidToAV P Dur {EnvTrapezoid A R Dur} Next}
+[] adsr(att:A dec:D sus:S rel:R) then
+    {SinusoidToAV P Dur {EnvADSR A D S R Dur} Next}
+[] hyperbola(att:A) then
+    {SinusoidToAV P Dur {EnvHyperbola A Dur} Next}
+\end{lstlisting}
+        si l'instrument est \texttt{none} un filtre ADSR par défaut est
+        passé à \texttt{SinusoidToAV}, mais si l'instrument indique
+        l'utilisation d'une enveloppe spécifique
+        (\texttt{trapezoid(...)}, \texttt{adsr(...)}, \texttt{hyperbola(...)}),
+        alors l'enveloppe correspondante est construite et passée.
+    \item \textbf{Extraits audio d'instruments:}
+        une fois un extrait d'instrument découpé à la bonne taille il faut
+        adoucir la fin de l'extrait, pour éviter un saut auditif (le début ne
+        pose pas problème parce qu'il est déjà lisse).
+        Dès lors, nous choisissons un filtre trapézoïde qui lisse uniquement la
+        fin:
+\begin{lstlisting}
+% Otherwise we have to read the instrument wav file.
+else
+    RawAV = {ReadInstrumentWav I P}
+    
+    % We apply a trapezoid filter to smooth the end (the start is
+    % already smooth).
+    Env = {EnvTrapezoid 0.0 0.03 Dur}
+    fun {ApplyEnv Pos AV}
+        case AV
+        of H|T then
+            H*{Env Pos}|{ApplyEnv Pos+Step T}
+        else
+            Next
+        end
+    end
+in
+    % We cut the instrument sample to the specified duration then we
+    % apply the envelope.
+    {ApplyEnv 0.0 {Cut 0.0 0.0 Dur RawAV nil}}
+\end{lstlisting}
+        Il s'agit ensuite de reparcourir le vecteur audio pour appliquer le
+        filtre sur ses éléments, ce que fait la sous-fonction \texttt{ApplyEnv}.
+\end{itemize}
 
 \section{Limitations}
 
