@@ -106,7 +106,12 @@ fun {Mix Interprete Music}
     end
     
     fun {EchoMusic RepStep Decay NumRepeat M End}
-        IntSum = (1.0 - {Pow Decay {IntToFloat NumRepeat}+1.0}) / (1.0 - Decay)
+        IntSum =
+            if Decay == 1.0 then
+                {IntToFloat NumRepeat}
+            else
+                (1.0 - {Pow Decay {IntToFloat NumRepeat}+1.0}) / (1.0 - Decay)
+            end
         fun {ToMerge Lag Int I}
             if I == NumRepeat then
                 nil
@@ -225,7 +230,7 @@ fun {Mix Interprete Music}
         [] merge(L) then
             {MergeMusics L End}
         [] echo(delai:D M) then
-            {EchoMusic D 1.0 1 M End}
+            {EchoMusic D 1.0 2 M End}
         [] echo(delai:D decadence:Dc M) then
             {EchoMusic D Dc 2 M End}
         [] echo(delai:D decadence:Dc repetition:R M) then

@@ -56,9 +56,11 @@ local Mix Interprete Projet ProcBenchmark FunBenchmark in
         %{Browse {Projet.run Mix Interprete renverser(partition(Soupe)) 'out.wav'}}
         %{Browse {Projet.run Mix Interprete repetition(nombre:3 partition([a b])) 'out.wav'}}
         %{Browse {Projet.run Mix Interprete repetition(duree:5.0 partition([a b])) 'out.wav'}}
+        %{Browse {Projet.run Mix Interprete repetition(nombre:2 partition(Soupe)) 'out.wav'}}
         %{Browse {Projet.run Mix Interprete clip(bas:~0.1 haut:0.1 partition(Soupe)) 'out.wav'}}
         %{Browse {Projet.run Mix Interprete merge([0.5#partition(e) 0.5#partition(a)]) 'out.wav'}}
         %{Browse {Projet.run Mix Interprete echo(delai:1.1 decadence:0.3 repetition:3 partition(a)) 'out.wav'}}
+        %{Browse {Projet.run Mix Interprete echo(delai:0.56 partition([Soupe Soupe])) 'out.wav'}}
         %{Browse {Projet.run Mix Interprete fondu(ouverture:2.0 fermeture:2.0 partition(Soupe)) 'out.wav'}}
         %{Browse {Projet.run Mix Interprete fondu_enchaine(duree:2.0 partition(Joie) partition(Soupe)) 'out.wav'}}
         %{Browse {Projet.run Mix Interprete couper(debut:~2.0 fin:6.0 partition(Soupe)) 'out.wav'}}
