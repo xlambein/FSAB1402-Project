@@ -38,7 +38,7 @@ in
     fun {NotePitch Note}
         InOctave
     in
-        % Pitch of the note within the octave
+        % Pitch of the note within the octave (relative to c)
         case Note.nom
         of c then InOctave = 0
         [] d then InOctave = 2
@@ -207,7 +207,7 @@ in
     end
     
     % We call the recursive function with the identity transformation and an
-    % empty accumulator.
+    % empty accumulator. And we benchmark it, too.
     {FunBenchmark fun {$}
     {InterpreteRecursive Score fun {$ Sample} Sample end nil}
     end 'Interprete'}

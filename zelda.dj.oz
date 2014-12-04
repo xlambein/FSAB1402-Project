@@ -29,7 +29,11 @@ local
     ]
 in
     merge([
-        0.5#echo(delai:0.8 decadence:0.4 partition(etirer(facteur:0.2 Tune)))
-        0.5#partition(etirer(facteur:0.4 Bass))
+        0.8#echo(delai:0.8 decadence:0.3 partition(
+            instrument(nom:hyperbola(att:0.03) etirer(facteur:0.2 Tune))
+        ))
+        0.2#partition(
+            instrument(nom:hyperbola(att:0.007) etirer(facteur:0.4 Bass))
+        )
     ])
 end
