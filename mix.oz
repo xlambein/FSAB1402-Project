@@ -2,6 +2,7 @@
 % audio vector.
 fun {Mix Interprete Music}
     Step = 1.0 / {IntToFloat Projet.hz}
+    InstrumentsDir = 'wave/instruments/'
     
     fun {ToAVLength Duration}
         {FloatToInt Duration / Step}
@@ -11,7 +12,80 @@ fun {Mix Interprete Music}
         {IntToFloat AVLength} * Step
     end
     
+    fun {Cut Pos StartCut EndCut AV End}
+        if Pos =< EndCut then
+            if Pos < 0.0 then
+                0.0|{Cut Pos+Step StartCut EndCut AV End}
+            else
+                case AV
+                of H|T then
+                    if Pos < StartCut then
+                        {Cut Pos+Step StartCut EndCut T End}
+                    else
+                        H|{Cut Pos+Step StartCut EndCut T End}
+                    end
+                [] nil then
+                    0.0|{Cut Pos+Step StartCut EndCut nil End}
+                end
+            end
+        else
+            End
+        end
+    end
+    
     \insert 'envelopes.oz'
+    
+    % Gives the pitch of a note relative a4, in semitones.
+    fun {PitchToNote Pitch}
+        Octave
+        InOctave
+        Note
+        fun {NoteLetter InOctave}
+            case InOctave
+            of 0 then 'c'
+            [] 1 then 'c'
+            [] 2 then 'd'
+            [] 3 then 'd'
+            [] 4 then 'e'
+            [] 5 then 'f'
+            [] 6 then 'f'
+            [] 7 then 'g'
+            [] 8 then 'g'
+            [] 9 then 'a'
+            [] 10 then 'a'
+            [] 11 then 'b'
+            end
+        end
+        fun {NoteAlteration InOctave}
+            case InOctave
+            of 1 then '#'
+            [] 3 then '#'
+            [] 6 then '#'
+            [] 8 then '#'
+            [] 10 then '#'
+            else
+                none
+            end
+        end
+        Letter
+        Alteration
+    in
+        Octave = (Pitch+9 + 4*12) div 12
+        InOctave = Pitch - (Octave-4)*12 + 9
+        Letter = {NoteLetter InOctave}
+        Alteration = {NoteAlteration InOctave}
+        
+        case Alteration
+        of none then
+            {VirtualString.toAtom Letter#Octave}
+        else
+            {VirtualString.toAtom Letter#Octave#"#"}
+        end
+    end
+    
+    fun {InstrumentToVA Instrument Pitch}
+        {Projet.readFile {VirtualString.toAtom InstrumentsDir#Instrument#'_'#{PitchToNote Pitch}#'.wav'}}
+    end
     
     fun {SampleToAV Sample End}
         case Sample
@@ -26,7 +100,7 @@ fun {Mix Interprete Music}
         in
             {Zeros 0.0 End}
         
-        [] echantillon(hauteur:P duree:D instrument:_) then
+        [] echantillon(hauteur:P duree:D instrument:none) then
             Freq = {Pow 2. {IntToFloat P}/12.}*440.
             Tau = 6.283185307
             Omega = Tau*Freq
@@ -40,6 +114,11 @@ fun {Mix Interprete Music}
             end
         in
             {Sinusoid 0.0 End}
+            
+        [] echantillon(hauteur:P duree:D instrument:I) then
+            AV = {InstrumentToVA I P}
+        in
+            {Cut 0.0 0.0 D AV End}
         end
     end
     
@@ -175,27 +254,6 @@ fun {Mix Interprete Music}
         {ApplyCrossFade 0.0 AV1 AV2}
     end
     
-    fun {Cut Pos StartCut EndCut AV End}
-        if Pos =< EndCut then
-            if Pos < 0.0 then
-                0.0|{Cut Pos+Step StartCut EndCut AV End}
-            else
-                case AV
-                of H|T then
-                    if Pos < StartCut then
-                        {Cut Pos+Step StartCut EndCut T End}
-                    else
-                        H|{Cut Pos+Step StartCut EndCut T End}
-                    end
-                [] nil then
-                    0.0|{Cut Pos+Step StartCut EndCut nil End}
-                end
-            end
-        else
-            End
-        end
-    end
-    
     fun {MergeTwo Int1 AV1 Int2 AV2 End}
         case AV1#AV2
         of (H1|T1)#(H2|T2) then
@@ -226,7 +284,7 @@ fun {Mix Interprete Music}
             {VoiceToAV {Interprete P} End}
             
         [] wave(F) then
-            {Projet.readFile F}|End
+            {Append {Projet.readFile F} End}
         [] merge(L) then
             {MergeMusics L End}
         [] echo(delai:D M) then
