@@ -21,7 +21,7 @@ fun {EnvADSR Dur}
 in
     fun {$ Pos}
         if Pos < Att then
-            Pos/A
+            Pos/Att
         elseif Pos-Att < Dec then
             1.0 + (Sus-1.0)*(Pos-Att)/Dec
         elseif Dur-Pos < Rel then
