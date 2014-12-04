@@ -36,7 +36,8 @@ local Mix Interprete Projet ProcBenchmark FunBenchmark in
 
     local 
         %[Joie JoieShort] = \insert 'joie.dj.oz'
-        Soupe = \insert 'soupe.dj.oz'
+        %Soupe = \insert 'soupe.dj.oz'
+        Zelda = \insert 'zelda.dj.oz'
     in
         % Votre code DOIT appeler Projet.run UNE SEULE fois.  Lors de cet appel,
         % vous devez mixer une musique qui démontre les fonctionalités de votre
@@ -49,7 +50,8 @@ local Mix Interprete Projet ProcBenchmark FunBenchmark in
         
         %{Browse {Projet.run Mix Interprete partition(Joie) 'out.wav'}}
         %{Browse {Projet.run Mix Interprete partition(JoieShort) 'out.wav'}}
-        {Browse {Projet.run Mix Interprete partition(Soupe) 'out.wav'}}
+        %{Browse {Projet.run Mix Interprete partition(Soupe) 'out.wav'}}
+        {Browse {Projet.run Mix Interprete Zelda 'out.wav'}}
         
         %{Browse {Projet.run Mix Interprete partition([silence a]) 'out.wav'}}
         %{Browse {Interprete bourdon(note:a muet(b))}}
